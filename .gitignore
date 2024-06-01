@@ -10,6 +10,18 @@
 /[Ll]ogs/
 /[Uu]ser[Ss]ettings/
 
+# External Dependency Manager
+/[Aa]ssets/ExternalDependencyManager/
+
+# Firebase
+/[Aa]ssets/Firebase/
+
+# Plugins
+/[Aa]ssets/Plugins/
+
+# Editor Default Resources
+/[Aa]ssets/Editor Default Resources/
+
 # MemoryCaptures can get excessive in size.
 # They also could contain extremely sensitive data
 /[Mm]emoryCaptures/

@@ -23,25 +23,41 @@ public class RegisterManager : MonoBehaviour
         string username = usernameInputField.text;
         string password = passwordInputField.text;
 
-        // Perform login validation or send to a server, etc.
-        Debug.Log("Username: " + username);
-        Debug.Log("Password: " + password);
-
-        // Example validation
-        if (username == "admin" && password == "12345")
+        if (!string.IsNullOrEmpty(username) && IsValidPassword(password))
         {
-            Debug.Log("Login Successful!");
             if (isTransitioning) return;
             isTransitioning = true;
             CarAnimator.SetBool("isTurningToNextScene", true);
 
             // Start a coroutine to delay the scene transition
+            Debug.Log("Register Successfully!");
             StartCoroutine(DelayedSceneTransition("LoginScene"));
         }
         else
         {
-            Debug.Log("Login Failed!");
+            Debug.Log("Register Failed!");
         }
+    }
+
+    bool IsValidPassword(string password)
+    {
+        if (password.Length <= 5)
+        {
+            return false;
+        }
+
+        bool hasLetter = false;
+        bool hasDigit = false;
+
+        foreach (char c in password)
+        {
+            if (char.IsLetter(c)) hasLetter = true;
+            if (char.IsDigit(c)) hasDigit = true;
+
+            if (hasLetter && hasDigit) return true;
+        }
+
+        return false;
     }
 
     IEnumerator DelayedSceneTransition(string sceneName)
