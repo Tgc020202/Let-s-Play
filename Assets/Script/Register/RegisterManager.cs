@@ -8,14 +8,55 @@ public class RegisterManager : MonoBehaviour
 {
     public InputField usernameInputField;
     public InputField passwordInputField;
+    public Text usernameInvalidMessage;
+    public Text passwordInvalidMessage;
     public Button registerButton;
     public Animator CarAnimator;
+    public GameObject RedTrafficLight;
+    public GameObject GreenTrafficLight;
+    public DatabaseManager dbManager;
     private bool isTransitioning = false;
+    private bool isUsernameExists = false;
 
-    // Start is called before the first frame update
     void Start()
     {
+        GreenTrafficLight.SetActive(false);
+        usernameInvalidMessage.text = "";
+        passwordInvalidMessage.text = "";
         registerButton.onClick.AddListener(OnRegisterButtonClick);
+    }
+
+    void Update()
+    {
+        string username = usernameInputField.text;
+        string password = passwordInputField.text;
+
+        if (string.IsNullOrEmpty(username))
+        {
+            usernameInvalidMessage.text = "Username cannot be empty!!!";
+            isUsernameExists = false;
+        }
+        else if (isUsernameExists)
+        {
+            usernameInvalidMessage.text = "Username already exists. Please choose a different username.";
+        }
+        else
+        {
+            usernameInvalidMessage.text = "";
+        }
+
+        if (string.IsNullOrEmpty(password))
+        {
+            passwordInvalidMessage.text = "Password cannot be empty!!!";
+        }
+        else if (!IsValidPassword(password))
+        {
+            passwordInvalidMessage.text = "Password must contain digits and letters, and more than 5 characters";
+        }
+        else
+        {
+            passwordInvalidMessage.text = "";
+        }
     }
 
     void OnRegisterButtonClick()
@@ -27,24 +68,40 @@ public class RegisterManager : MonoBehaviour
         {
             if (isTransitioning) return;
             isTransitioning = true;
-            CarAnimator.SetBool("isTurningToNextScene", true);
 
-            // Start a coroutine to delay the scene transition
-            Debug.Log("Register Successfully!");
-            StartCoroutine(DelayedSceneTransition("LoginScene"));
+            StartCoroutine(dbManager.CheckUsernameExists(username, usernameExists =>
+            {
+                if (!usernameExists)
+                {
+                    isUsernameExists = false;
+                    usernameInvalidMessage.text = "";
+                    dbManager.CreateUser(username, password);
+
+                    RedTrafficLight.SetActive(false);
+                    GreenTrafficLight.SetActive(true);
+
+                    CarAnimator.SetBool("isTurningToNextScene", true);
+
+                    Debug.Log("Register Successfully!");
+                    StartCoroutine(DelayedSceneTransition("LoginScene"));
+                }
+                else
+                {
+                    isTransitioning = false;
+                    isUsernameExists = true;
+                    Debug.Log("Username already exists. Please choose a different username.");
+                }
+            }));
         }
         else
         {
-            Debug.Log("Register Failed!");
+            Debug.Log("Register Failed! Invalid username or password.");
         }
     }
 
     bool IsValidPassword(string password)
     {
-        if (password.Length <= 5)
-        {
-            return false;
-        }
+        if (password.Length <= 5) return false;
 
         bool hasLetter = false;
         bool hasDigit = false;
@@ -63,7 +120,6 @@ public class RegisterManager : MonoBehaviour
     IEnumerator DelayedSceneTransition(string sceneName)
     {
         yield return new WaitForSeconds(2f);
-
         SceneManager.LoadScene(sceneName);
     }
 }

@@ -14,4 +14,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/LoginScene.unity
     guid: 311d92d541657cf4d80086200c6471bc
+  - enabled: 1
+    path: Assets/Scenes/RoomSelectionsScene.unity
+    guid: f7b74f6a33cb80b428c60af96f33a07f
   m_configObjects: {}
