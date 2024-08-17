@@ -48,7 +48,8 @@ public class LoginManager : MonoBehaviour
                 CarAnimator.SetBool("isTurningToNextScene", true);
 
                 Debug.Log("Login Successfully!");
-                StartCoroutine(DelayedSceneTransition("RoomSelectionsScene"));
+                // StartCoroutine(DelayedSceneTransition("RoomSelectionsScene"));
+                StartCoroutine(DelayedSceneTransition("GameView"));
             }
             else
             {
