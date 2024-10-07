@@ -20,4 +20,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/GameView.unity
     guid: e35302da9cd85ae46a37791e934ebbb7
+  - enabled: 1
+    path: Assets/Scenes/GameView-Worker.unity
+    guid: 48b93d5ecff32544c85839b8f722ed62
   m_configObjects: {}

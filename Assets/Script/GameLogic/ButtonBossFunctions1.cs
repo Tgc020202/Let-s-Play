@@ -2,12 +2,11 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
 
-public class ButtonFunctions : MonoBehaviour
+public class ButtonBossFunctions : MonoBehaviour
 {
     public PlayerMovement playerMovement;
     public Button runButton;
-    public Button redButton;
-    public Button greenButton;
+    public Button catchButton;
 
     private bool canUseRunButton = true;
 
@@ -15,8 +14,7 @@ public class ButtonFunctions : MonoBehaviour
     {
         // Assign button click listeners
         runButton.onClick.AddListener(OnRunButtonClicked);
-        redButton.onClick.AddListener(OnRedButtonClicked);
-        greenButton.onClick.AddListener(OnGreenButtonClicked);
+        catchButton.onClick.AddListener(OnCatchButtonClicked);
     }
 
     void OnRunButtonClicked()
@@ -27,14 +25,9 @@ public class ButtonFunctions : MonoBehaviour
         }
     }
 
-    void OnRedButtonClicked()
+    void OnCatchButtonClicked()
     {
-        playerMovement.enabled = false; // Disable player movement
-    }
-
-    void OnGreenButtonClicked()
-    {
-        Debug.Log("Help: Use the run button to speed up, red button to stop, green button for help.");
+        Debug.Log("Catch someone.");
     }
 
     IEnumerator SpeedBoost()
