@@ -53,14 +53,17 @@ public class ModeSelection : MonoBehaviour
         if (currentModeIndex == 1)
         {
             modeText.text = "Game Mode 1\n(Secret Murder)";
+            VariableHolder.modeCode = "Mode1";
         }
         else if (currentModeIndex == 2)
         {
             modeText.text = "Game Mode 2\n(Vote Murder)";
+            VariableHolder.modeCode = "Mode2";
         }
         else if (currentModeIndex == 3)
         {
             modeText.text = "Game Mode 3\n(Zombie Murder)";
+            VariableHolder.modeCode = "Mode3";
         }
     }
 

@@ -54,6 +54,7 @@ public class MapSelection : MonoBehaviour
     void UpdateMapText()
     {
         mapText.text = "Map " + currentMapIndex.ToString();
+        VariableHolder.modeCode = "Map" + currentMapIndex.ToString();
     }
 
     void OnMapButtonClicked()

@@ -8,12 +8,12 @@ public class testing : MonoBehaviour
     public Button bt1;
     public Button bt2;
     public Button bt3;
-    public GameObject test;
+    // public GameObject test;
 
     // Start is called before the first frame update
     void Start()
     {
-        test.SetActive(false);
+        // test.SetActive(false);
         bt1.onClick.AddListener(() =>
         {
             bt1.gameObject.SetActive(false);
@@ -22,7 +22,7 @@ public class testing : MonoBehaviour
         bt3.onClick.AddListener(() =>
         {
             bt3.gameObject.SetActive(false);
-            test.gameObject.SetActive(true);
+            // test.gameObject.SetActive(true);
 
         });
     }

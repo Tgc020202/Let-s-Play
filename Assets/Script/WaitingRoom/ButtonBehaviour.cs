@@ -2,21 +2,21 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using System.Collections;
-public class RoomSelectionButton : MonoBehaviour
 
+public class ButtonBehaviour : MonoBehaviour
 {
-    public Button createRoomButton;
-    public Button joinRoomButton;
+    public Button editModeButton;
+    public Button playButton;
     public Animator CarAnimator;
-    public GameObject RedTrafficLight;
-    public GameObject GreenTrafficLight;
     private bool isTransitioning = false;
 
+    // Start is called before the first frame update
     void Start()
     {
-        GreenTrafficLight.SetActive(false);
-        createRoomButton.onClick.AddListener(() => OnButtonClicked("RoomSetup"));
-        joinRoomButton.onClick.AddListener(() => OnButtonClicked("LobbySelectionScene"));
+        editModeButton.onClick.AddListener(() => OnButtonClicked("RoomSetup"));
+        // Game-Map1-Mode1-Boss
+        // playButton.onClick.AddListener(() => OnButtonClicked($"Game-{VariableHolder.mapCode}-{VariableHolder.modeCode}-Boss"));
+        playButton.onClick.AddListener(() => OnButtonClicked($"Game-{VariableHolder.mapCode}-{VariableHolder.modeCode}-Worker"));
     }
 
     void OnButtonClicked(string sceneName)

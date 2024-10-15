@@ -63,7 +63,8 @@ public class NumberOfPlayerSelection : MonoBehaviour
         // Update the displayed text
         bossCountText.text = bossCount.ToString();
         staffCountText.text = staffCount.ToString();
-        sumText.text = "Total Player: " + (bossCount + staffCount).ToString();
+        VariableHolder.totalNumberOfPlayer = bossCount + staffCount;
+        sumText.text = "Total Player: " + (VariableHolder.totalNumberOfPlayer).ToString();
 
         // Enable/Disable buttons
         bossNextButton.interactable = bossCount < staffCount;
