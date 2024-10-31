@@ -1,24 +1,32 @@
 using UnityEngine;
-using UnityEngine.UI;
+using Unity.Netcode;
 
-public class PlayerMovement : MonoBehaviour
+public class PlayerMovement : NetworkBehaviour
 {
-    public float speed = 5f;
-
+    public float speed = 5f; // Default speed
     private Rigidbody2D rb;
     private Vector2 moveInput;
 
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
+
+        if (IsOwner)
+        {
+            CameraBehaviour cameraBehaviour = Camera.main.GetComponent<CameraBehaviour>();
+            if (cameraBehaviour != null)
+            {
+                cameraBehaviour.SetTarget(transform);
+            }
+        }
     }
 
     void Update()
     {
-        // Reset moveInput each frame
+        if (!IsOwner) return;
+
         moveInput = Vector2.zero;
 
-        // Keyboard Input
         if (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow))
             moveInput.y = 1;
         else if (Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow))
@@ -30,9 +38,31 @@ public class PlayerMovement : MonoBehaviour
             moveInput.x = 1;
 
         // Normalize the input to prevent faster diagonal movement
-        Vector2 moveVelocity = moveInput.normalized * speed;
+        moveInput.Normalize();
 
-        // Move the player based on moveVelocity
-        rb.MovePosition(rb.position + moveVelocity * Time.fixedDeltaTime);
+        MovePlayerServerRpc(moveInput);
+    }
+
+    // Movement of the player
+    [ServerRpc]
+    private void MovePlayerServerRpc(Vector2 direction)
+    {
+        // Move the player based on direction
+        rb.MovePosition(rb.position + direction * speed * Time.fixedDeltaTime);
+    }
+
+    // Speed of the player movement
+    [ServerRpc]
+    public void IncreaseSpeedServerRpc(bool isIncrease)
+    {
+        speed = isIncrease ? speed + 20f : speed - 20f;
+        Debug.Log("Speed become: " + speed);
+    }
+
+    [ServerRpc]
+    public void StopServerRpc(bool isStop)
+    {
+        speed = isStop ? 0f : 5f;
+        Debug.Log("Speed become: " + speed);
     }
 }

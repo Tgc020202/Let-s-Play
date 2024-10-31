@@ -2,13 +2,34 @@ using UnityEngine;
 
 public class CameraBehaviour : MonoBehaviour
 {
-    public Transform player;
+    public Transform target;
+    public float smoothSpeed = 0.125f;
+    public Vector3 offset;
+
     void LateUpdate()
     {
-        Vector3 cameraPosition = transform.position;
-        cameraPosition.x = player.position.x;
-        cameraPosition.y = player.position.y;
-        transform.position = cameraPosition;
+        if (target != null)
+        {
+            Vector3 desiredPosition = target.position + offset;
+            Vector3 smoothedPosition = Vector3.Lerp(transform.position, desiredPosition, smoothSpeed);
+            transform.position = smoothedPosition;
+
+            transform.LookAt(target);
+        }
+        else
+        {
+            Debug.LogWarning("Camera target is null!");
+        }
+    }
+
+    public void SetTarget(Transform newTarget)
+    {
+        target = newTarget;
+        Debug.Log($"Camera target set to: {target.name}");
+    }
+
+    public void ChangeTarget(Transform newTarget)
+    {
+        target = newTarget;
     }
 }
-

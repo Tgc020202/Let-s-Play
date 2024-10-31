@@ -1,18 +1,19 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
-
+using Unity.Netcode;
 public class ButtonWorkerFunctions : MonoBehaviour
 {
+    private NetworkObject playerNetworkObject;
     public PlayerMovement playerMovement;
     public Button runButton;
     public Button redButton;
     public Button greenButton;
-    public GameObject Player;
     public GameObject GameViewUI;
     public GameObject MapDesign;
     public GameObject GuidanceUI;
 
+    private bool isPlayerStop = false;
     private bool canUseRunButton = true;
     private Text runButtonText;
     private float timer = 5f;
@@ -25,9 +26,10 @@ public class ButtonWorkerFunctions : MonoBehaviour
         greenButton.onClick.AddListener(OnGreenButtonClicked);
 
         runButtonText = runButton.GetComponentInChildren<Text>();
-        Player.SetActive(false);
         GameViewUI.SetActive(false);
         MapDesign.SetActive(false);
+        GuidanceUI.SetActive(true);
+		NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
     }
 
     void Update()
@@ -45,17 +47,36 @@ public class ButtonWorkerFunctions : MonoBehaviour
         }
     }
 
+    private void OnClientConnected(ulong clientId)
+    {
+        if (NetworkManager.Singleton.LocalClient != null && NetworkManager.Singleton.LocalClient.PlayerObject != null)
+        {
+            playerNetworkObject = NetworkManager.Singleton.LocalClient.PlayerObject.GetComponent<NetworkObject>();
+            playerMovement = playerNetworkObject.GetComponent<PlayerMovement>();
+        }
+        else
+        {
+            Debug.LogError("Player object not found after spawn!");
+        }
+    }
+
     void OnRunButtonClicked()
     {
-        if (canUseRunButton)
+        if (playerNetworkObject != null && playerNetworkObject.IsOwner && canUseRunButton && !isPlayerStop)
         {
+            Debug.Log("Player " + playerNetworkObject.NetworkObjectId + " clicked the run button!");
             StartCoroutine(SpeedBoost());
         }
     }
 
     void OnRedButtonClicked()
     {
-        playerMovement.enabled = false; // Disable player movement
+        if (playerNetworkObject != null && playerNetworkObject.IsOwner)
+        {
+            Debug.Log("Player " + playerNetworkObject.NetworkObjectId + " clicked the stop button!");
+            isPlayerStop = true;
+            playerMovement.StopServerRpc(true);
+        }
     }
 
     void OnGreenButtonClicked()
@@ -66,15 +87,17 @@ public class ButtonWorkerFunctions : MonoBehaviour
     IEnumerator SpeedBoost()
     {
         canUseRunButton = false;
-        playerMovement.speed += 5;
+
+        playerMovement.IncreaseSpeedServerRpc(true);
+
         // Countdown from 20 seconds
         for (int i = 20; i > 0; i--)
         {
             runButtonText.text = i + "s"; // Update button text to show countdown
             yield return new WaitForSeconds(1); // Wait 1 second per count
-            if (i == 16)
+            if (i == 16 && !isPlayerStop)
             {
-                playerMovement.speed -= 5;
+                playerMovement.IncreaseSpeedServerRpc(false);
             }
         }
         runButtonText.text = "Run";
@@ -83,7 +106,6 @@ public class ButtonWorkerFunctions : MonoBehaviour
 
     void OnSkipGuidanceUI()
     {
-        Player.SetActive(true);
         MapDesign.SetActive(true);
         GameViewUI.SetActive(true);
         GuidanceUI.SetActive(false);
