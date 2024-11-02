@@ -9,14 +9,12 @@ public class PlayerRoleManager : NetworkBehaviour
     {
         if (IsOwner)
         {
-            // Ensure UI updates when the role changes for the local player
             playerRole.OnValueChanged += OnRoleChanged;
         }
     }
 
     private void OnRoleChanged(RoleType oldRole, RoleType newRole)
     {
-        // Update UI here based on the new role (Boss or Worker)
         Debug.Log("Role changed to: " + newRole.ToString());
     }
 }

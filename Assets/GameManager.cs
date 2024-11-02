@@ -50,6 +50,7 @@ public class GameManager : NetworkBehaviour
         {
             // Randomize roles
             int randomRole = Random.Range(0, 2); // 0 = Worker, 1 = Boss
+            // int randomRole = IsServer || IsHost ? 1 : Random.Range(0, 2); // Host must be Boss role
 
             if (randomRole == 1 && numberOfBosses.Value < VariableHolder.maxNumberOfBosses)
             {
@@ -74,7 +75,7 @@ public class GameManager : NetworkBehaviour
     {
         Debug.Log("Assigning Boss role to clientId: " + clientId);
         numberOfBosses.Value++;
-        rolesAssigned[clientId] = true; // Mark this client as having an assigned role
+        rolesAssigned[clientId] = true;
         UpdateRoleUIClientRpc(clientId, "Boss");
     }
 

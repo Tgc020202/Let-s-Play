@@ -3,6 +3,7 @@ using Unity.Netcode;
 
 public class PlayerManager : NetworkBehaviour
 {
+    public bool isImmuneToCatch;
     public override void OnNetworkSpawn()
     {
         if (IsOwner)
@@ -68,5 +69,18 @@ public class PlayerManager : NetworkBehaviour
         {
             collider.enabled = enabled;
         }
+    }
+
+    // Set player immunity status for the worker role
+    [ServerRpc(RequireOwnership = false)]
+    public void SetImmunityServerRpc(bool enabled)
+    {
+        SetImmunityClientRpc(enabled);
+    }
+
+    [ClientRpc]
+    private void SetImmunityClientRpc(bool enabled)
+    {
+        isImmuneToCatch = enabled;
     }
 }

@@ -3,6 +3,7 @@ using UnityEngine;
 public class CollisionTriggerDisplay : MonoBehaviour
 {
     public bool canCatchPlayer = false;
+    public bool canHelpPlayer = false;
     public GameObject targetPlayer;
 
     private void OnTriggerEnter2D(Collider2D other)
@@ -10,9 +11,9 @@ public class CollisionTriggerDisplay : MonoBehaviour
         Debug.Log("Trigger entered by: " + other.gameObject.name);
         if (other.CompareTag("Player") && other.gameObject != gameObject)
         {
-            Debug.Log("Catch: Player within range: " + other.gameObject.name);
+            Debug.Log("Catch/Help: Player within range: " + other.gameObject.name);
             targetPlayer = other.gameObject;
-            canCatchPlayer = true;
+            canCatchPlayer = canHelpPlayer = true;
         }
     }
 
@@ -21,7 +22,7 @@ public class CollisionTriggerDisplay : MonoBehaviour
         if (other.CompareTag("Player") && other.gameObject == targetPlayer)
         {
             Debug.Log("Player moved out of range: " + other.gameObject.name);
-            canCatchPlayer = false;
+            canCatchPlayer = canHelpPlayer = false;
             targetPlayer = null;
         }
     }

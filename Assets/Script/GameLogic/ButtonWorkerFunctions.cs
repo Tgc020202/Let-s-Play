@@ -2,10 +2,12 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
 using Unity.Netcode;
+
 public class ButtonWorkerFunctions : MonoBehaviour
 {
     private NetworkObject playerNetworkObject;
     public PlayerMovement playerMovement;
+    public CollisionTriggerDisplay collisionTriggerDisplay;
     public Button runButton;
     public Button redButton;
     public Button greenButton;
@@ -13,28 +15,27 @@ public class ButtonWorkerFunctions : MonoBehaviour
     public GameObject MapDesign;
     public GameObject GuidanceUI;
 
-    private bool isPlayerStop = false;
     private bool canUseRunButton = true;
     private Text runButtonText;
     private float timer = 5f;
 
+    private bool canHelpPlayer = false;
+    private GameObject targetPlayer;
+
     void Start()
     {
-        // Assign button click listeners
         runButton.onClick.AddListener(OnRunButtonClicked);
         redButton.onClick.AddListener(OnRedButtonClicked);
         greenButton.onClick.AddListener(OnGreenButtonClicked);
-
         runButtonText = runButton.GetComponentInChildren<Text>();
         GameViewUI.SetActive(false);
         MapDesign.SetActive(false);
         GuidanceUI.SetActive(true);
-		NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
+        NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
     }
 
     void Update()
     {
-        // Press Space key to skip guidance
         if (Input.GetKey(KeyCode.Space)) OnSkipGuidanceUI();
 
         if (timer > 0)
@@ -53,6 +54,7 @@ public class ButtonWorkerFunctions : MonoBehaviour
         {
             playerNetworkObject = NetworkManager.Singleton.LocalClient.PlayerObject.GetComponent<NetworkObject>();
             playerMovement = playerNetworkObject.GetComponent<PlayerMovement>();
+            collisionTriggerDisplay = playerNetworkObject.GetComponent<CollisionTriggerDisplay>();
         }
         else
         {
@@ -62,10 +64,18 @@ public class ButtonWorkerFunctions : MonoBehaviour
 
     void OnRunButtonClicked()
     {
-        if (playerNetworkObject != null && playerNetworkObject.IsOwner && canUseRunButton && !isPlayerStop)
+        if (playerNetworkObject != null && playerNetworkObject.IsOwner && canUseRunButton)
         {
-            Debug.Log("Player " + playerNetworkObject.NetworkObjectId + " clicked the run button!");
-            StartCoroutine(SpeedBoost());
+            var playerManager = playerNetworkObject.GetComponent<PlayerManager>();
+            if (playerManager != null && !playerManager.isImmuneToCatch)
+            {
+                Debug.Log("Player " + playerNetworkObject.NetworkObjectId + " clicked the run button!");
+                StartCoroutine(SpeedBoost());
+            }
+            else
+            {
+                Debug.Log("Speed boost is disabled due to immunity.");
+            }
         }
     }
 
@@ -74,28 +84,36 @@ public class ButtonWorkerFunctions : MonoBehaviour
         if (playerNetworkObject != null && playerNetworkObject.IsOwner)
         {
             Debug.Log("Player " + playerNetworkObject.NetworkObjectId + " clicked the stop button!");
-            isPlayerStop = true;
-            playerMovement.StopServerRpc(true);
+            SetImmunityServerRpc(playerNetworkObject.NetworkObjectId, true);
+            playerMovement.enabled = false;
         }
     }
 
     void OnGreenButtonClicked()
     {
-        Debug.Log("Help: Use the run button to speed up, red button to stop, green button for help.");
+        targetPlayer = collisionTriggerDisplay.targetPlayer;
+        canHelpPlayer = collisionTriggerDisplay.canHelpPlayer;
+
+        Debug.Log("targetPlayer: " + targetPlayer);
+        Debug.Log("canHelpPlayer: " + canHelpPlayer);
+
+        if (playerNetworkObject != null && playerNetworkObject.IsOwner && canHelpPlayer && targetPlayer != null)
+        {
+            Debug.Log("Help attempt on player: " + targetPlayer.GetComponent<NetworkObject>().NetworkObjectId);
+            HelpPlayerServerRpc(targetPlayer.GetComponent<NetworkObject>().NetworkObjectId);
+        }
     }
 
     IEnumerator SpeedBoost()
     {
         canUseRunButton = false;
-
         playerMovement.IncreaseSpeedServerRpc(true);
 
-        // Countdown from 20 seconds
         for (int i = 20; i > 0; i--)
         {
-            runButtonText.text = i + "s"; // Update button text to show countdown
-            yield return new WaitForSeconds(1); // Wait 1 second per count
-            if (i == 16 && !isPlayerStop)
+            runButtonText.text = i + "s";
+            yield return new WaitForSeconds(1);
+            if (i == 16)
             {
                 playerMovement.IncreaseSpeedServerRpc(false);
             }
@@ -109,5 +127,35 @@ public class ButtonWorkerFunctions : MonoBehaviour
         MapDesign.SetActive(true);
         GameViewUI.SetActive(true);
         GuidanceUI.SetActive(false);
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    public void SetImmunityServerRpc(ulong targetPlayerId, bool enabled)
+    {
+        var targetNetworkObject = NetworkManager.Singleton.SpawnManager.SpawnedObjects[targetPlayerId];
+        if (targetNetworkObject != null)
+        {
+            var targetPlayerManager = targetNetworkObject.GetComponent<PlayerManager>();
+            if (targetPlayerManager != null)
+            {
+                targetPlayerManager.SetImmunityServerRpc(enabled);
+            }
+        }
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    public void HelpPlayerServerRpc(ulong targetPlayerId)
+    {
+        var targetNetworkObject = NetworkManager.Singleton.SpawnManager.SpawnedObjects[targetPlayerId];
+        if (targetNetworkObject != null)
+        {
+            Debug.Log($"Helping player: {targetPlayerId}");
+            var targetPlayerManager = targetNetworkObject.GetComponent<PlayerManager>();
+            if (targetPlayerManager != null)
+            {
+                targetPlayerManager.SetMovementEnabledServerRpc(true);
+                targetPlayerManager.SetImmunityServerRpc(false);
+            }
+        }
     }
 }
