@@ -9,9 +9,7 @@ public class ModeSelection : MonoBehaviour
     public Button nextButton;
     public Button modeButton;
     public Text modeText;
-    public Animator CarAnimator;
-    private bool isTransitioning = false;
-    private int currentModeIndex = 1;
+    public int currentModeIndex = 1;
     private const int maxModes = 3;
 
     void Start()
@@ -19,7 +17,7 @@ public class ModeSelection : MonoBehaviour
         // Assign listeners for map selection
         nextButton.onClick.AddListener(OnNextClicked);
         previousButton.onClick.AddListener(OnPreviousClicked);
-        modeButton.onClick.AddListener(() => OnModeButtonClicked("RoomScene"));
+        modeButton.onClick.AddListener(OnModeButtonClicked);
 
         // Initialize the map name and button states
         UpdateModeText();
@@ -67,22 +65,8 @@ public class ModeSelection : MonoBehaviour
         }
     }
 
-    void OnModeButtonClicked(string sceneName)
+    void OnModeButtonClicked()
     {
-        if (isTransitioning) return;
-        isTransitioning = true;
-        CarAnimator.SetBool("isTurningToNextScene", true);
-
-        // Start a coroutine to delay the scene transition
-        StartCoroutine(DelayedSceneTransition(sceneName));
-    }
-
-    IEnumerator DelayedSceneTransition(string sceneName)
-    {
-        // Wait for 2 seconds
-        yield return new WaitForSeconds(2f);
-
-        // Move to the specified scene
-        SceneManager.LoadScene(sceneName);
+        Debug.Log("Mode: " + currentModeIndex);
     }
 }

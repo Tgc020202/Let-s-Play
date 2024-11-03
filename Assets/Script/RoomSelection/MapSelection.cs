@@ -11,7 +11,7 @@ public class MapSelection : MonoBehaviour
     public GameObject MapUI;
     public GameObject ModeUI;
 
-    private int currentMapIndex = 1;
+    public int currentMapIndex = 1;
     private const int maxMaps = 4;
 
     void Start()

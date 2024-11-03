@@ -18,8 +18,8 @@ public class NumberOfPlayerSelection : MonoBehaviour
     public GameObject MapUI;
     public GameObject ModeUI;
 
-    private int bossCount = 1;
-    private int staffCount = 3;
+    public int bossCount = 1;
+    public int staffCount = 3;
 
     void Start()
     {

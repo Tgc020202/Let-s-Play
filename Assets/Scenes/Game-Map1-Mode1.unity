@@ -3439,6 +3439,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerMovement: {fileID: 6800289814954482599, guid: fba9fa6dc6147ca4e918ff0ef8417973, type: 3}
+  collisionTriggerDisplay: {fileID: 0}
   runButton: {fileID: 206505436}
   redButton: {fileID: 1632939356}
   greenButton: {fileID: 1021075139}
@@ -8072,7 +8073,7 @@ GameObject:
   - component: {fileID: 1945181467}
   - component: {fileID: 1945181466}
   m_Layer: 5
-  m_Name: Text (Legacy)
+  m_Name: Text
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -8663,7 +8664,7 @@ GameObject:
   - component: {fileID: 2051050125}
   - component: {fileID: 2051050124}
   m_Layer: 5
-  m_Name: Text (Legacy)
+  m_Name: Text
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
