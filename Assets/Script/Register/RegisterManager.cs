@@ -10,11 +10,15 @@ public class RegisterManager : MonoBehaviour
     public InputField passwordInputField;
     public Text usernameInvalidMessage;
     public Text passwordInvalidMessage;
-    public Button registerButton;
+    public Button submitButton;
+    public DatabaseManager dbManager;
+
+    // Audio
+    private AudioSource BackgroundMusic;
     public Animator CarAnimator;
     public GameObject RedTrafficLight;
     public GameObject GreenTrafficLight;
-    public DatabaseManager dbManager;
+
     private bool isTransitioning = false;
     private bool isUsernameExists = false;
 
@@ -23,7 +27,10 @@ public class RegisterManager : MonoBehaviour
         GreenTrafficLight.SetActive(false);
         usernameInvalidMessage.text = "";
         passwordInvalidMessage.text = "";
-        registerButton.onClick.AddListener(OnRegisterButtonClick);
+        submitButton.onClick.AddListener(OnSubmitButtonClick);
+
+        // Audio
+        BackgroundMusic = GameObject.Find("AudioManager/BackgroundMusic").GetComponent<AudioSource>();
     }
 
     void Update()
@@ -59,7 +66,7 @@ public class RegisterManager : MonoBehaviour
         }
     }
 
-    void OnRegisterButtonClick()
+    void OnSubmitButtonClick()
     {
         string username = usernameInputField.text;
         string password = passwordInputField.text;
@@ -84,6 +91,10 @@ public class RegisterManager : MonoBehaviour
 
                     Debug.Log("Register Successfully!");
                     StartCoroutine(DelayedSceneTransition("LoginScene"));
+
+                    // Stop the background music
+                    BackgroundMusic.Stop();
+
                 }
                 else
                 {

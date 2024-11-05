@@ -8,6 +8,9 @@ public class StartGameManager : MonoBehaviour
     public Button PlayButton;
     public Button RegisterButton;
     public Button LoginButton;
+
+    // Audio
+    private AudioSource BackgroundMusic;
     public Animator CarAnimator;
     private bool isTransitioning = false;
 
@@ -16,6 +19,9 @@ public class StartGameManager : MonoBehaviour
         // Initially hide Register and Login buttons
         RegisterButton.gameObject.SetActive(false);
         LoginButton.gameObject.SetActive(false);
+
+        // Audio
+        BackgroundMusic = GameObject.Find("AudioManager/BackgroundMusic").GetComponent<AudioSource>();
 
         // Add listeners to all the buttons
         PlayButton.onClick.AddListener(OnPlayButtonClicked);
@@ -46,10 +52,10 @@ public class StartGameManager : MonoBehaviour
 
     IEnumerator DelayedSceneTransition(string sceneName)
     {
-        // Wait for 2 seconds
         yield return new WaitForSeconds(2f);
-
-        // Move to the specified scene
         SceneManager.LoadScene(sceneName);
+
+        // Stop the background music
+        BackgroundMusic.Stop();
     }
 }

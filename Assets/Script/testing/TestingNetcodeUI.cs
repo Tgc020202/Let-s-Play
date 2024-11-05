@@ -18,10 +18,6 @@ public class TestingNetcodeUI : MonoBehaviour
         {
             Debug.Log("Starting Host...");
             NetworkManager.Singleton.StartHost();
-            // if (NetworkManager.Singleton.IsHost)
-            // {
-            //     gameManager.RequestRoleAssignmentServerRpc();
-            // }
             Hide();
         });
 
@@ -39,7 +35,6 @@ public class TestingNetcodeUI : MonoBehaviour
         if (clientId == NetworkManager.Singleton.LocalClientId)
         {
             Debug.Log("Client connected: " + clientId);
-            // gameManager.RequestRoleAssignmentServerRpc();
         }
     }
 

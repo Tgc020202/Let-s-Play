@@ -10,12 +10,16 @@ public class LoginManager : MonoBehaviour
     public InputField passwordInputField;
     public Text usernameInvalidMessage;
     public Text passwordInvalidMessage;
-    public Button loginButton;
-    public Button goToRegisterButton;
+    public Button playButton;
+    public Button backToRegisterButton;
+    public DatabaseManager dbManager;
+
+    // Audio
+    private AudioSource BackgroundMusic;
     public Animator CarAnimator;
     public GameObject RedTrafficLight;
     public GameObject GreenTrafficLight;
-    public DatabaseManager dbManager;
+
     private bool isTransitioning = false;
 
     void Start()
@@ -23,11 +27,14 @@ public class LoginManager : MonoBehaviour
         GreenTrafficLight.SetActive(false);
         usernameInvalidMessage.text = "";
         passwordInvalidMessage.text = "";
-        loginButton.onClick.AddListener(OnLoginButtonClick);
-        goToRegisterButton.onClick.AddListener(OnGoToRegisterButton);
+        playButton.onClick.AddListener(OnPlayButtonClick);
+        backToRegisterButton.onClick.AddListener(OnBackToRegisterButton);
+
+        // Audio
+        BackgroundMusic = GameObject.Find("AudioManager/BackgroundMusic").GetComponent<AudioSource>();
     }
 
-    void OnLoginButtonClick()
+    void OnPlayButtonClick()
     {
         string username = usernameInputField.text;
         string password = passwordInputField.text;
@@ -48,7 +55,7 @@ public class LoginManager : MonoBehaviour
                 CarAnimator.SetBool("isTurningToNextScene", true);
 
                 Debug.Log("Login Successfully!");
-                StartCoroutine(DelayedSceneTransition("RoomSelectionsScene"));
+                StartCoroutine(DelayedSceneTransition("LobbyScene"));
             }
             else
             {
@@ -67,14 +74,20 @@ public class LoginManager : MonoBehaviour
         }));
     }
 
-    void OnGoToRegisterButton()
+    void OnBackToRegisterButton()
     {
         SceneManager.LoadScene("RegisterScene");
+
+        // Stop the background music
+        BackgroundMusic.Stop();
     }
 
     IEnumerator DelayedSceneTransition(string sceneName)
     {
         yield return new WaitForSeconds(2f);
         SceneManager.LoadScene(sceneName);
+
+        // Stop the background music
+        BackgroundMusic.Stop();
     }
 }

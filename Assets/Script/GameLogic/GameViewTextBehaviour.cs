@@ -8,12 +8,11 @@ public class GameViewTextBehaviour : NetworkBehaviour
     public Text gameDuration;
     public Text roleText;
 
-    private NetworkVariable<float> timerDuration = new NetworkVariable<float>(200f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server); // Timer will be managed by the server
+    private NetworkVariable<float> timerDuration = new NetworkVariable<float>(200f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
     private float timeRemaining;
 
     void Start()
     {
-        // Initialize the timer for clients (they'll get synced updates from the server)
         timeRemaining = timerDuration.Value;
         UpdateTimerText();
     }
@@ -22,25 +21,23 @@ public class GameViewTextBehaviour : NetworkBehaviour
     {
         if (IsServer)
         {
-            // Server controls the timer and updates it
             if (timeRemaining > 0)
             {
                 timeRemaining = Mathf.Max(0, timeRemaining - Time.deltaTime);
-                timerDuration.Value = timeRemaining; // Update NetworkVariable with the remaining time
+                timerDuration.Value = timeRemaining;
 
                 if (timeRemaining == 0)
                 {
-                    EndGameServerRpc(); // Call the end game on the server
+                    EndGameServerRpc(false);
                 }
             }
         }
         else
         {
-            // Clients just read the synchronized timerDuration from the server
             timeRemaining = timerDuration.Value;
         }
 
-        UpdateTimerText(); // Update the UI for all clients
+        UpdateTimerText();
     }
 
     // Method to update the timer text on the UI
@@ -52,31 +49,15 @@ public class GameViewTextBehaviour : NetworkBehaviour
 
     // Method to handle the end of the game
     [ServerRpc]
-    void EndGameServerRpc()
+    public void EndGameServerRpc(bool isBossWin)
     {
-        // Logic for determining the winner
-        VariableHolder.isBossWin = false; // Placeholder logic; adjust as needed
-
-        // Based on the player's role, decide the outcome
-        if (roleText.text == "Worker")
-        {
-            EndGameClientRpc("Worker"); // Send an end game call to clients
-        }
-        else if (roleText.text == "Boss")
-        {
-            EndGameClientRpc("Boss"); // Send an end game call to clients
-        }
-        else
-        {
-            Debug.LogWarning("Unknown role: " + roleText.text);
-        }
+        EndGameClientRpc(isBossWin);
     }
 
     [ClientRpc]
-    void EndGameClientRpc(string role)
+    void EndGameClientRpc(bool isBossWin)
     {
-        // Load the end game scene on all clients
+        VariableHolder.isBossWin = isBossWin;
         SceneManager.LoadScene("EndGameScene");
-        Debug.Log(role + " wins!");
     }
 }

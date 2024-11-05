@@ -28,6 +28,7 @@ public class ButtonWorkerFunctions : MonoBehaviour
         redButton.onClick.AddListener(OnRedButtonClicked);
         greenButton.onClick.AddListener(OnGreenButtonClicked);
         runButtonText = runButton.GetComponentInChildren<Text>();
+
         GameViewUI.SetActive(false);
         MapDesign.SetActive(false);
         GuidanceUI.SetActive(true);
@@ -86,6 +87,9 @@ public class ButtonWorkerFunctions : MonoBehaviour
             Debug.Log("Player " + playerNetworkObject.NetworkObjectId + " clicked the stop button!");
             SetImmunityServerRpc(playerNetworkObject.NetworkObjectId, true);
             playerMovement.enabled = false;
+
+            // Decrease the worker count when a player is caught
+            GameObject.FindObjectOfType<GameManager>()?.UpdateWorkerCountRequest(-1);
         }
     }
 
@@ -101,6 +105,8 @@ public class ButtonWorkerFunctions : MonoBehaviour
         {
             Debug.Log("Help attempt on player: " + targetPlayer.GetComponent<NetworkObject>().NetworkObjectId);
             HelpPlayerServerRpc(targetPlayer.GetComponent<NetworkObject>().NetworkObjectId);
+            // Increase the worker count when a player is helped
+            GameObject.FindObjectOfType<GameManager>()?.UpdateWorkerCountRequest(+1);
         }
     }
 

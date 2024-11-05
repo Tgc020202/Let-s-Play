@@ -10,17 +10,19 @@ public class ButtonBossFunctions : MonoBehaviour
     public CollisionTriggerDisplay collisionTriggerDisplay;
     public Button runButton;
     public Button catchButton;
+    private Text runButtonText;
+
     public GameObject GameViewUI;
     public GameObject MapDesign;
     public GameObject GuidanceUI;
+    private GameObject targetPlayer;
+
+    private float timer = 5f;
 
     private bool canUseRunButton = true;
     private bool isImmuneToCatch = false;
-    private Text runButtonText;
-    private float timer = 5f;
-
     private bool canCatchPlayer = false;
-    private GameObject targetPlayer;
+
 
     void Start()
     {
@@ -124,10 +126,11 @@ public class ButtonBossFunctions : MonoBehaviour
 
             if (targetPlayerManager != null && !targetPlayerManager.isImmuneToCatch)
             {
-                // When player caught, allow move to view other players
-                // targetPlayerManager.SetMovementEnabledServerRpc(false);
                 targetPlayerManager.SetVisibilityServerRpc(false);
                 targetPlayerManager.SetColliderServerRpc(false);
+
+                // Decrease the worker count when a player is caught
+                GameObject.FindObjectOfType<GameManager>()?.UpdateWorkerCountRequest(-1);
             }
         }
     }

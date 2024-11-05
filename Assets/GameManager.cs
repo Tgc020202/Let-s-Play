@@ -15,6 +15,28 @@ public class GameManager : NetworkBehaviour
 
     private Dictionary<ulong, bool> rolesAssigned = new Dictionary<ulong, bool>(); // Track roles per client
 
+    private bool isGameStart = false;
+    private bool oneshot = true;
+
+    void Update()
+    {
+        if (IsServer)
+        {
+            // To prevent the game assign first role as boss, and boss win directly
+            if (numberOfWorkers.Value > 0 && oneshot)
+            {
+                isGameStart = true;
+                oneshot = false;
+            }
+
+            // Check if the number of workers is zero and end the game if so
+            if (numberOfWorkers.Value <= 0 && isGameStart)
+            {
+                GameObject.FindObjectOfType<GameViewTextBehaviour>()?.EndGameServerRpc(true); // Call end game
+                EndGame();
+            }
+        }
+    }
     public override void OnNetworkSpawn()
     {
         if (IsServer || IsHost)
@@ -32,7 +54,7 @@ public class GameManager : NetworkBehaviour
         }
     }
 
-    private void OnRoleCountChanged(int oldValue, int newValue)
+    public void OnRoleCountChanged(int oldValue, int newValue)
     {
         Debug.Log("Number of Bosses: " + numberOfBosses.Value);
         Debug.Log("Number of Workers: " + numberOfWorkers.Value);
@@ -48,9 +70,8 @@ public class GameManager : NetworkBehaviour
     {
         if (!rolesAssigned.ContainsKey(clientId) || !rolesAssigned[clientId])
         {
-            // Randomize roles
             int randomRole = Random.Range(0, 2); // 0 = Worker, 1 = Boss
-            // int randomRole = IsServer || IsHost ? 1 : Random.Range(0, 2); // Host must be Boss role
+            // int randomRole = IsServer || IsHost ? 1 : 0; // Debug uses purpose
 
             if (randomRole == 1 && numberOfBosses.Value < VariableHolder.maxNumberOfBosses)
             {
@@ -100,12 +121,61 @@ public class GameManager : NetworkBehaviour
         Debug.Log("Updated UI for clientId: " + clientId + " with role: " + role);
     }
 
+    public void UpdateWorkerCountRequest(int delta)
+    {
+        if (IsClient)
+        {
+            RequestWorkerCountUpdateServerRpc(delta);
+        }
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    private void RequestWorkerCountUpdateServerRpc(int delta)
+    {
+        // This code runs only on the server, updating the NetworkVariable
+        numberOfWorkers.Value += delta;
+    }
+
+    // Clean data after the game end
     private void OnDestroy()
     {
         if (IsServer)
         {
             numberOfBosses.OnValueChanged -= OnRoleCountChanged;
             numberOfWorkers.OnValueChanged -= OnRoleCountChanged;
+        }
+    }
+
+    [ServerRpc]
+    private void DespawnPlayerServerRpc(ulong clientId)
+    {
+        var playerObject = NetworkManager.Singleton.ConnectedClients[clientId].PlayerObject;
+        if (playerObject != null)
+        {
+            playerObject.Despawn();
+            Debug.Log($"Despawned player object for clientId: {clientId}");
+        }
+    }
+    public void EndGame()
+    {
+        if (IsServer)
+        {
+            foreach (var playerObject in NetworkManager.Singleton.ConnectedClientsList)
+            {
+                if (playerObject.PlayerObject != null)
+                {
+                    // Call an RPC to despawn the player object
+                    DespawnPlayerServerRpc(playerObject.ClientId);
+                }
+            }
+
+            // Reset roles and counts
+            rolesAssigned.Clear();
+            numberOfBosses.Value = 0;
+            numberOfWorkers.Value = 0;
+
+            // Optionally, you can despawn the GameManager itself if needed
+            // NetworkObject.Despawn();
         }
     }
 }
