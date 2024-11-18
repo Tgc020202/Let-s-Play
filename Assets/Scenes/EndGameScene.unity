@@ -1403,7 +1403,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 73aafc98a6146b4439414f0eb5869df9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  roomCode: {fileID: 1035836293}
+  roomNameText: {fileID: 1035836293}
 --- !u!4 &2069842549
 Transform:
   m_ObjectHideFlags: 0

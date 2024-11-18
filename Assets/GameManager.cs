@@ -72,6 +72,8 @@ public class GameManager : NetworkBehaviour
         {
             int randomRole = Random.Range(0, 2); // 0 = Worker, 1 = Boss
             // int randomRole = IsServer || IsHost ? 1 : 0; // Debug uses purpose
+            Debug.Log("VariableHolder.maxNumberOfBosses: " + VariableHolder.maxNumberOfBosses);
+            Debug.Log("VariableHolder.maxNumberOfWorkers: " + VariableHolder.maxNumberOfWorkers);
 
             if (randomRole == 1 && numberOfBosses.Value < VariableHolder.maxNumberOfBosses)
             {
@@ -174,8 +176,12 @@ public class GameManager : NetworkBehaviour
             numberOfBosses.Value = 0;
             numberOfWorkers.Value = 0;
 
+
+            // Set the flag to indicate the player is returning to the room
+            VariableHolder.isFromEndGameToRoom = true;
+
             // Optionally, you can despawn the GameManager itself if needed
-            // NetworkObject.Despawn();
+            NetworkManager.Singleton.Shutdown();
         }
     }
 }

@@ -8,11 +8,13 @@ public class GameViewTextBehaviour : NetworkBehaviour
     public Text gameDuration;
     public Text roleText;
 
+    private AudioSource BackgroundMusic;
     private NetworkVariable<float> timerDuration = new NetworkVariable<float>(200f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
     private float timeRemaining;
 
     void Start()
     {
+        BackgroundMusic = GameObject.Find("AudioManager/BossBackgroundMusic").GetComponent<AudioSource>();
         timeRemaining = timerDuration.Value;
         UpdateTimerText();
     }
@@ -57,7 +59,13 @@ public class GameViewTextBehaviour : NetworkBehaviour
     [ClientRpc]
     void EndGameClientRpc(bool isBossWin)
     {
+        BackgroundMusic.Stop();
         VariableHolder.isBossWin = isBossWin;
+
+        NetworkManager.Singleton.Shutdown();
+        Destroy(NetworkManager.Singleton.gameObject);
+        Debug.Log("Destroy already!!!");
+
         SceneManager.LoadScene("EndGameScene");
     }
 }

@@ -4,10 +4,10 @@ using UnityEngine;
 using UnityEngine.UI;
 using Hashtable = ExitGames.Client.Photon.Hashtable;
 using System.Collections.Generic;
+using UnityEngine.SceneManagement;
 
 public class LobbyManager : MonoBehaviourPunCallbacks
 {
-    // UI Elements
     public InputField roomNameInput;
     public Button createRoomButton;
     public Button joinRoomButton;
@@ -15,11 +15,8 @@ public class LobbyManager : MonoBehaviourPunCallbacks
     public Button privateButton;
     public Button modeButton;
     public InputField roomCodeInput;
-    public Text roomCodeText;
-    public Button playButton; // Only for room owner
-    public Button readyButton; // Only for room joiner
     public Transform roomListContent;
-    public GameObject roomItemPrefab; // Prefab for each room item in the list
+    public GameObject roomItemPrefab;
     public NumberOfPlayerSelection numberOfPlayerSelection;
     public MapSelection mapSelection;
     public ModeSelection modeSelection;
@@ -29,77 +26,85 @@ public class LobbyManager : MonoBehaviourPunCallbacks
     public GameObject PlayerSetupUI;
     public GameObject RoomSetupUI;
     public GameObject JoinRoomUI;
-    public GameObject WaitingRoomUI;
+    // public GameObject WaitingRoomUI;
 
     // Audio
     private AudioSource BackgroundMusic;
     private Dictionary<string, GameObject> uiDictionary;
     private bool isPrivate = false;
     private bool isConnectedToMaster = false;
+
     private void Start()
     {
-        PhotonNetwork.ConnectUsingSettings();
-        PhotonNetwork.AutomaticallySyncScene = true;
-        playButton.interactable = PhotonNetwork.IsMasterClient; // Only room owner can start
+        RoomManager.Instance.ConnectToPhoton();
 
         // Audio
         BackgroundMusic = GameObject.Find("AudioManager/BackgroundMusic").GetComponent<AudioSource>();
 
         // UI
         uiDictionary = new Dictionary<string, GameObject>
-        {
-            { "RoomSelectionUI", RoomSelectionUI },
-            { "PlayerSetupUI", PlayerSetupUI },
-            { "RoomSetupUI", RoomSetupUI },
-            { "JoinRoomUI", JoinRoomUI },
-            { "WaitingRoomUI", WaitingRoomUI }
-        };
+    {
+        { "RoomSelectionUI", RoomSelectionUI },
+        { "PlayerSetupUI", PlayerSetupUI },
+        { "RoomSetupUI", RoomSetupUI },
+        { "JoinRoomUI", JoinRoomUI },
+    };
 
         // Button Assign
         createRoomButton.onClick.AddListener(() =>
         {
             OnUpdateNetworkRoleToHost(true);
             ToggleUIActive("PlayerSetupUI", true);
-        }
-        );
+        });
+
         joinRoomButton.onClick.AddListener(() =>
         {
             OnUpdateNetworkRoleToHost(false);
             ToggleUIActive("JoinRoomUI", true);
-        }
-        );
+        });
+
         publicButton.onClick.AddListener(() => OnSetPrivateClicked(false));
         privateButton.onClick.AddListener(() => OnSetPrivateClicked(true));
         modeButton.onClick.AddListener(OnCreateRoomButtonClicked);
-        playButton.onClick.AddListener(OnPlayButtonClicked);
-        readyButton.onClick.AddListener(OnReadyButtonClicked);
 
         roomCodeInput.onEndEdit.AddListener(OnRoomCodeInputEndEdit);
 
-        // Initialize the first UI
-        if (VariableHolder.isFromEndGameToRoom)
+        // UI based on entry point
+        ToggleUIActive("RoomSelectionUI", true);
+    }
+
+    // UI Handler
+    public void ToggleUIActive(string UIName, bool isActive)
+    {
+        foreach (var ui in uiDictionary)
         {
-            ToggleUIActive("WaitingRoomUI", true);
-            VariableHolder.isFromEndGameToRoom = false;
-        }
-        else
-        {
-            ToggleUIActive("RoomSelectionUI", true);
+            ui.Value.SetActive(ui.Key == UIName ? isActive : !isActive);
         }
     }
 
-    // Create Room
+    public void OnUpdateNetworkRoleToHost(bool isHost)
+    {
+        VariableHolder.networkRole = isHost ? NetworkRole.Host : NetworkRole.Client;
+    }
+
     public void OnSetPrivateClicked(bool isPrivate)
     {
-        this.isPrivate = isPrivate; // Correctly set the private flag
-        ToggleUIActive("RoomSetupUI", true);
+        if (!string.IsNullOrEmpty(roomNameInput.text))
+        {
+            this.isPrivate = isPrivate;
+            ToggleUIActive("RoomSetupUI", true);
+        }
+        else
+        {
+            Debug.Log("Please enter Room Name");
+        }
     }
 
     public override void OnConnectedToMaster()
     {
         Debug.Log("Connected to Master Server.");
         isConnectedToMaster = true;
-        PhotonNetwork.JoinLobby(); // Join the lobby after connecting
+        PhotonNetwork.JoinLobby();
     }
 
     public override void OnJoinedLobby()
@@ -110,11 +115,18 @@ public class LobbyManager : MonoBehaviourPunCallbacks
     public void OnCreateRoomButtonClicked()
     {
         string roomName = roomNameInput.text;
-        string roomCode = roomName; // or generate a unique code
+        string roomCode = roomName;
+        int numberOfPlayers = (byte)(numberOfPlayerSelection.bossCount + numberOfPlayerSelection.staffCount);
+
+        // Store variables
+        RoomManager.Instance.numberOfPlayers = numberOfPlayers;
+        RoomManager.Instance.currentMapIndex = mapSelection.currentMapIndex;
+        RoomManager.Instance.currentModeIndex = modeSelection.currentModeIndex;
+        RoomManager.Instance.roomName = roomName;
 
         RoomOptions options = new RoomOptions
         {
-            MaxPlayers = (byte)(numberOfPlayerSelection.bossCount + numberOfPlayerSelection.staffCount),
+            MaxPlayers = numberOfPlayers,
             IsVisible = !isPrivate,
             IsOpen = true
         };
@@ -123,24 +135,17 @@ public class LobbyManager : MonoBehaviourPunCallbacks
         PhotonNetwork.CreateRoom(roomName, options, null);
     }
 
-
     public override void OnCreatedRoom()
     {
-        ToggleUIActive("WaitingRoomUI", true);
+        SceneManager.LoadScene("WaitingRoomScene");
 
-        // Set the custom properties for the room after it's created
-        string roomCode = roomNameInput.text; // or use a generated code
+        string roomCode = roomNameInput.text;
         Hashtable customProperties = new Hashtable { { "roomCode", roomCode } };
         PhotonNetwork.CurrentRoom.SetCustomProperties(customProperties);
-
-        // Display room code
-        roomCodeText.text = roomCode.ToString(); // Display the room code
     }
 
-    // Join Room by code
     private void OnRoomCodeInputEndEdit(string input)
     {
-        // Check if Enter key was pressed
         if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter))
         {
             OnJoinRoomByCodeClicked();
@@ -152,20 +157,23 @@ public class LobbyManager : MonoBehaviourPunCallbacks
         if (!isConnectedToMaster)
         {
             Debug.LogError("Cannot join room: Not connected to Master Server.");
-            return; // Exit if not connected
+            return;
         }
 
-        string roomCode = roomCodeInput.text;
-        PhotonNetwork.JoinRoom(roomCode);
-        ToggleUIActive("WaitingRoomUI", true);
+        string roomName = roomCodeInput.text;
+
+        // Store variables
+        RoomManager.Instance.roomName = roomName;
+
+        PhotonNetwork.JoinRoom(roomName);
+        SceneManager.LoadScene("WaitingRoomScene");
     }
 
-    // Populate Room List for Public Rooms
     public override void OnRoomListUpdate(List<RoomInfo> roomList)
     {
         foreach (Transform child in roomListContent)
         {
-            Destroy(child.gameObject); // Clear existing room list
+            Destroy(child.gameObject);
         }
 
         foreach (RoomInfo room in roomList)
@@ -177,87 +185,34 @@ public class LobbyManager : MonoBehaviourPunCallbacks
                 roomItem.transform.Find("PlayerCountText").GetComponent<Text>().text = $"{room.PlayerCount}/{room.MaxPlayers}";
 
                 Button joinButton = roomItem.GetComponent<Button>();
-                joinButton.onClick.AddListener(() =>
+
+                // Check if the room is full
+                if (room.PlayerCount >= room.MaxPlayers)
                 {
-                    PhotonNetwork.JoinRoom(room.Name);  // no happen anything
-                    ToggleUIActive("WaitingRoomUI", true);
-                });
+                    joinButton.interactable = false; // Disable the join button
+                    roomItem.transform.Find("PlayerCountText").GetComponent<Text>().color = Color.red; // Optionally change the color to indicate it's full
+                }
+                else
+                {
+                    joinButton.onClick.AddListener(() =>
+                    {
+                        string roomName = room.Name;
+
+                        // Store variables
+                        RoomManager.Instance.roomName = room.Name;
+                        PhotonNetwork.JoinRoom(room.Name);
+                        SceneManager.LoadScene("WaitingRoomScene");
+                    });
+                }
             }
         }
     }
 
-    // Ready Button Clicked - Sets "isReady" property for each player
-    public void OnReadyButtonClicked()
-    {
-        Hashtable playerProperties = new Hashtable { { "isReady", true } };
-        PhotonNetwork.LocalPlayer.SetCustomProperties(playerProperties);
-    }
-
-    // Play Button Clicked - Checks if all players are ready before starting the game
-    public void OnPlayButtonClicked()
-    {
-        bool allReady = true;
-        foreach (Player player in PhotonNetwork.CurrentRoom.Players.Values)
-        {
-            if (!player.CustomProperties.ContainsKey("isReady") || !(bool)player.CustomProperties["isReady"])
-            {
-                allReady = false;
-                break;
-            }
-        }
-
-        if (allReady)
-        {
-            // Load the selected map and mode
-            string selectedMap = mapSelection.currentMapIndex.ToString();
-            string selectedMod = modeSelection.currentModeIndex.ToString();
-            Debug.Log("Map: " + selectedMap);
-            Debug.Log("Mod: " + selectedMod);
-
-            // Stop the background music
-            BackgroundMusic.Stop();
-            PhotonNetwork.LoadLevel("Game-Map" + selectedMap + "-Mode" + selectedMod);
-        }
-        else
-        {
-            Debug.Log("Not all players are ready.");
-        }
-    }
-
-    // Ensure play button is only enabled for the room owner
     public override void OnJoinedRoom()
     {
-        playButton.interactable = PhotonNetwork.IsMasterClient;
         if (PhotonNetwork.CurrentRoom.CustomProperties.ContainsKey("roomCode"))
         {
-            roomCodeText.text = PhotonNetwork.CurrentRoom.CustomProperties["roomCode"].ToString();
-        }
-    }
-
-    // Update play button availability when room owner changes
-    public override void OnMasterClientSwitched(Player newMasterClient)
-    {
-        playButton.interactable = PhotonNetwork.IsMasterClient;
-    }
-
-    public void ToggleUIActive(string UIName, bool isActive)
-    {
-        foreach (var ui in uiDictionary)
-        {
-            ui.Value.SetActive(ui.Key == UIName ? isActive : !isActive);
-        }
-    }
-
-    // Update network role
-    public void OnUpdateNetworkRoleToHost(bool isHost)
-    {
-        if (isHost)
-        {
-            VariableHolder.networkRole = NetworkRole.Host;
-        }
-        else
-        {
-            VariableHolder.networkRole = NetworkRole.Client;
+            Debug.Log("RoomCode: " + PhotonNetwork.CurrentRoom.CustomProperties["roomCode"].ToString());
         }
     }
 }

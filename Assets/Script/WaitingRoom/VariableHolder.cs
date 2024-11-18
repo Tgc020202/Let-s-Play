@@ -14,4 +14,5 @@ public static class VariableHolder
     public static int maxNumberOfWorkers = 3;
 
     public static bool isFromEndGameToRoom = false;
+    // public static bool isGameStarted = false;
 }

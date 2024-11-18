@@ -3,13 +3,14 @@ using UnityEngine.UI;
 
 public class RoomCodeSetup : MonoBehaviour
 {
-    public Text roomCode;
+    public Text roomNameText;
     void Start()
     {
         // Assign room code or "XXXX" if null
-        if (roomCode != null)
+        if (roomNameText != null)
         {
-            roomCode.text = !string.IsNullOrEmpty(VariableHolder.roomCode) ? VariableHolder.roomCode : "XXXX";
+            string roomName = RoomManager.Instance.roomName;
+            roomNameText.text = !string.IsNullOrEmpty(roomName) ? roomName : "XXXX";
         }
     }
 }
