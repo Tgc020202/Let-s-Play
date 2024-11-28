@@ -9,24 +9,29 @@ using UnityEngine.SceneManagement;
 public class LobbyManager : MonoBehaviourPunCallbacks
 {
     public InputField roomNameInput;
+    public Text roomNameErrorText;
     public Button createRoomButton;
     public Button joinRoomButton;
     public Button publicButton;
     public Button privateButton;
     public Button modeButton;
+    public Button backButton;
     public InputField roomCodeInput;
-    public Transform roomListContent;
-    public GameObject roomItemPrefab;
     public NumberOfPlayerSelection numberOfPlayerSelection;
     public MapSelection mapSelection;
     public ModeSelection modeSelection;
+    public Transform roomListContent;
+    public GameObject roomItemPrefab;
+    private List<RoomInfo> cachedRoomList = new List<RoomInfo>();
 
     // Panels
     public GameObject RoomSelectionUI;
     public GameObject PlayerSetupUI;
     public GameObject RoomSetupUI;
     public GameObject JoinRoomUI;
-    // public GameObject WaitingRoomUI;
+    public GameObject MapUI;
+    public GameObject TotalNumberUI;
+    public GameObject ModeUI;
 
     // Audio
     private AudioSource BackgroundMusic;
@@ -39,7 +44,15 @@ public class LobbyManager : MonoBehaviourPunCallbacks
         RoomManager.Instance.ConnectToPhoton();
 
         // Audio
-        BackgroundMusic = GameObject.Find("AudioManager/BackgroundMusic").GetComponent<AudioSource>();
+        GameObject bgmObject = GameObject.Find("AudioManager/BackgroundMusic");
+        if (bgmObject != null)
+        {
+            BackgroundMusic = bgmObject.GetComponent<AudioSource>();
+        }
+        else
+        {
+            Debug.LogWarning("AudioManager/BackgroundMusic not found.");
+        }
 
         // UI
         uiDictionary = new Dictionary<string, GameObject>
@@ -48,9 +61,11 @@ public class LobbyManager : MonoBehaviourPunCallbacks
         { "PlayerSetupUI", PlayerSetupUI },
         { "RoomSetupUI", RoomSetupUI },
         { "JoinRoomUI", JoinRoomUI },
+        { "MapUI", MapUI },
+        { "TotalNumberUI", TotalNumberUI },
+        { "ModeUI", ModeUI },
     };
 
-        // Button Assign
         createRoomButton.onClick.AddListener(() =>
         {
             OnUpdateNetworkRoleToHost(true);
@@ -66,10 +81,10 @@ public class LobbyManager : MonoBehaviourPunCallbacks
         publicButton.onClick.AddListener(() => OnSetPrivateClicked(false));
         privateButton.onClick.AddListener(() => OnSetPrivateClicked(true));
         modeButton.onClick.AddListener(OnCreateRoomButtonClicked);
+        backButton.onClick.AddListener(OnBackButtonClicked);
 
         roomCodeInput.onEndEdit.AddListener(OnRoomCodeInputEndEdit);
 
-        // UI based on entry point
         ToggleUIActive("RoomSelectionUI", true);
     }
 
@@ -80,6 +95,11 @@ public class LobbyManager : MonoBehaviourPunCallbacks
         {
             ui.Value.SetActive(ui.Key == UIName ? isActive : !isActive);
         }
+
+        bool anySubUIActive = MapUI.activeSelf || TotalNumberUI.activeSelf || ModeUI.activeSelf;
+
+        // If any of these UIs are active, set RoomSetupUI to active as well
+        RoomSetupUI.SetActive(anySubUIActive);
     }
 
     public void OnUpdateNetworkRoleToHost(bool isHost)
@@ -87,17 +107,46 @@ public class LobbyManager : MonoBehaviourPunCallbacks
         VariableHolder.networkRole = isHost ? NetworkRole.Host : NetworkRole.Client;
     }
 
+    public void OnBackButtonClicked()
+    {
+        Debug.Log("Clicked");
+        ToggleUIActive("RoomSelectionUI", true);
+    }
+
     public void OnSetPrivateClicked(bool isPrivate)
     {
-        if (!string.IsNullOrEmpty(roomNameInput.text))
+        string roomName = roomNameInput.text;
+
+        if (!string.IsNullOrEmpty(roomName))
         {
-            this.isPrivate = isPrivate;
-            ToggleUIActive("RoomSetupUI", true);
+            if (IsRoomNameAvailable(roomName))
+            {
+                roomNameErrorText.text = "";
+                this.isPrivate = isPrivate;
+                ToggleUIActive("MapUI", true);
+            }
+            else
+            {
+                roomNameErrorText.text = "Room name already exists. Please choose a different name.";
+            }
         }
         else
         {
-            Debug.Log("Please enter Room Name");
+            roomNameInput.placeholder.GetComponent<Text>().text = "Please enter Room Name!";
         }
+    }
+
+
+    private bool IsRoomNameAvailable(string roomName)
+    {
+        foreach (var room in cachedRoomList)
+        {
+            if (room.Name == roomName)
+            {
+                return false;
+            }
+        }
+        return true;
     }
 
     public override void OnConnectedToMaster()
@@ -109,24 +158,25 @@ public class LobbyManager : MonoBehaviourPunCallbacks
 
     public override void OnJoinedLobby()
     {
-        Debug.Log("Successfully joined the lobby.");
+        Debug.Log("Successfully joined the lobby system.");
     }
 
     public void OnCreateRoomButtonClicked()
     {
         string roomName = roomNameInput.text;
         string roomCode = roomName;
-        int numberOfPlayers = (byte)(numberOfPlayerSelection.bossCount + numberOfPlayerSelection.staffCount);
 
         // Store variables
-        RoomManager.Instance.numberOfPlayers = numberOfPlayers;
+        RoomManager.Instance.numberOfPlayers = numberOfPlayerSelection.totalNumberOfPlayer;
+        RoomManager.Instance.maxNumberOfBosses = numberOfPlayerSelection.bossCount;
+        RoomManager.Instance.maxNumberOfWorkers = numberOfPlayerSelection.staffCount;
         RoomManager.Instance.currentMapIndex = mapSelection.currentMapIndex;
         RoomManager.Instance.currentModeIndex = modeSelection.currentModeIndex;
         RoomManager.Instance.roomName = roomName;
 
         RoomOptions options = new RoomOptions
         {
-            MaxPlayers = numberOfPlayers,
+            MaxPlayers = RoomManager.Instance.numberOfPlayers,
             IsVisible = !isPrivate,
             IsOpen = true
         };
@@ -171,12 +221,51 @@ public class LobbyManager : MonoBehaviourPunCallbacks
 
     public override void OnRoomListUpdate(List<RoomInfo> roomList)
     {
-        foreach (Transform child in roomListContent)
+        if (cachedRoomList.Count == 0)
         {
-            Destroy(child.gameObject);
+            cachedRoomList = new List<RoomInfo>(roomList);
+        }
+        else
+        {
+            foreach (var room in roomList)
+            {
+                bool roomExists = false;
+                for (int i = 0; i < cachedRoomList.Count; i++)
+                {
+                    if (cachedRoomList[i].Name == room.Name)
+                    {
+                        roomExists = true;
+
+                        if (room.RemovedFromList)
+                        {
+                            cachedRoomList.RemoveAt(i);
+                        }
+                        else
+                        {
+                            cachedRoomList[i] = room;
+                        }
+                        break;
+                    }
+                }
+
+                if (!roomExists && !room.RemovedFromList)
+                {
+                    cachedRoomList.Add(room);
+                }
+            }
         }
 
-        foreach (RoomInfo room in roomList)
+        UpdateUI();
+    }
+
+    void UpdateUI()
+    {
+        foreach (Transform roomItem in roomListContent)
+        {
+            Destroy(roomItem.gameObject);
+        }
+
+        foreach (var room in cachedRoomList)
         {
             if (!room.RemovedFromList)
             {
@@ -189,8 +278,8 @@ public class LobbyManager : MonoBehaviourPunCallbacks
                 // Check if the room is full
                 if (room.PlayerCount >= room.MaxPlayers)
                 {
-                    joinButton.interactable = false; // Disable the join button
-                    roomItem.transform.Find("PlayerCountText").GetComponent<Text>().color = Color.red; // Optionally change the color to indicate it's full
+                    joinButton.interactable = false;
+                    roomItem.transform.Find("PlayerCountText").GetComponent<Text>().color = Color.red;
                 }
                 else
                 {

@@ -8,6 +8,8 @@ public class RoomManager : MonoBehaviour
 
     // Add variables to store
     public int numberOfPlayers;
+    public int maxNumberOfBosses;
+    public int maxNumberOfWorkers;
     public int currentMapIndex;
     public int currentModeIndex;
     public string roomName;

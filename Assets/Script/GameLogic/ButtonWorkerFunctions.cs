@@ -47,6 +47,11 @@ public class ButtonWorkerFunctions : MonoBehaviour
         {
             OnSkipGuidanceUI();
         }
+
+        if (playerMovement != null)
+        {
+            redButton.interactable = playerMovement.enabled;
+        }
     }
 
     private void OnClientConnected(ulong clientId)
@@ -70,7 +75,6 @@ public class ButtonWorkerFunctions : MonoBehaviour
             var playerManager = playerNetworkObject.GetComponent<PlayerManager>();
             if (playerManager != null && !playerManager.isImmuneToCatch)
             {
-                Debug.Log("Player " + playerNetworkObject.NetworkObjectId + " clicked the run button!");
                 StartCoroutine(SpeedBoost());
             }
             else
@@ -84,7 +88,6 @@ public class ButtonWorkerFunctions : MonoBehaviour
     {
         if (playerNetworkObject != null && playerNetworkObject.IsOwner)
         {
-            Debug.Log("Player " + playerNetworkObject.NetworkObjectId + " clicked the stop button!");
             SetImmunityServerRpc(playerNetworkObject.NetworkObjectId, true);
             playerMovement.enabled = false;
 
@@ -98,12 +101,8 @@ public class ButtonWorkerFunctions : MonoBehaviour
         targetPlayer = collisionTriggerDisplay.targetPlayer;
         canHelpPlayer = collisionTriggerDisplay.canHelpPlayer;
 
-        Debug.Log("targetPlayer: " + targetPlayer);
-        Debug.Log("canHelpPlayer: " + canHelpPlayer);
-
         if (playerNetworkObject != null && playerNetworkObject.IsOwner && canHelpPlayer && targetPlayer != null)
         {
-            Debug.Log("Help attempt on player: " + targetPlayer.GetComponent<NetworkObject>().NetworkObjectId);
             HelpPlayerServerRpc(targetPlayer.GetComponent<NetworkObject>().NetworkObjectId);
             // Increase the worker count when a player is helped
             GameObject.FindObjectOfType<GameManager>()?.UpdateWorkerCountRequest(+1);
@@ -155,7 +154,6 @@ public class ButtonWorkerFunctions : MonoBehaviour
         var targetNetworkObject = NetworkManager.Singleton.SpawnManager.SpawnedObjects[targetPlayerId];
         if (targetNetworkObject != null)
         {
-            Debug.Log($"Helping player: {targetPlayerId}");
             var targetPlayerManager = targetNetworkObject.GetComponent<PlayerManager>();
             if (targetPlayerManager != null)
             {

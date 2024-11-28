@@ -13,26 +13,32 @@ public class GameManager : NetworkBehaviour
     private NetworkVariable<int> numberOfBosses = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
     private NetworkVariable<int> numberOfWorkers = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
-    private Dictionary<ulong, bool> rolesAssigned = new Dictionary<ulong, bool>(); // Track roles per client
+    private Dictionary<ulong, bool> rolesAssigned = new Dictionary<ulong, bool>();
 
+    private int maxNumberOfBosses;
+    private int maxNumberOfWorkers;
     private bool isGameStart = false;
     private bool oneshot = true;
+
+    void Start()
+    {
+        maxNumberOfBosses = RoomManager.Instance.maxNumberOfBosses;
+        maxNumberOfWorkers = RoomManager.Instance.maxNumberOfWorkers;
+    }
 
     void Update()
     {
         if (IsServer)
         {
-            // To prevent the game assign first role as boss, and boss win directly
             if (numberOfWorkers.Value > 0 && oneshot)
             {
                 isGameStart = true;
                 oneshot = false;
             }
 
-            // Check if the number of workers is zero and end the game if so
             if (numberOfWorkers.Value <= 0 && isGameStart)
             {
-                GameObject.FindObjectOfType<GameViewTextBehaviour>()?.EndGameServerRpc(true); // Call end game
+                GameObject.FindObjectOfType<GameViewTextBehaviour>()?.EndGameServerRpc(true);
                 EndGame();
             }
         }
@@ -72,25 +78,23 @@ public class GameManager : NetworkBehaviour
         {
             int randomRole = Random.Range(0, 2); // 0 = Worker, 1 = Boss
             // int randomRole = IsServer || IsHost ? 1 : 0; // Debug uses purpose
-            Debug.Log("VariableHolder.maxNumberOfBosses: " + VariableHolder.maxNumberOfBosses);
-            Debug.Log("VariableHolder.maxNumberOfWorkers: " + VariableHolder.maxNumberOfWorkers);
 
-            if (randomRole == 1 && numberOfBosses.Value < VariableHolder.maxNumberOfBosses)
+            if (randomRole == 1 && numberOfBosses.Value < maxNumberOfBosses)
             {
                 AssignBoss(clientId);
             }
-            else if (numberOfWorkers.Value < VariableHolder.maxNumberOfWorkers)
+            else if (numberOfWorkers.Value < maxNumberOfWorkers)
             {
                 AssignWorker(clientId);
             }
             else
             {
-                Debug.Log("No available roles left for new client.");
+                AssignBoss(clientId);
             }
         }
         else
         {
-            Debug.Log("Role already assigned for clientId: " + clientId); // For debugging
+            Debug.Log("Role already assigned for clientId: " + clientId);
         }
     }
 
@@ -138,7 +142,6 @@ public class GameManager : NetworkBehaviour
         numberOfWorkers.Value += delta;
     }
 
-    // Clean data after the game end
     private void OnDestroy()
     {
         if (IsServer)
@@ -166,21 +169,14 @@ public class GameManager : NetworkBehaviour
             {
                 if (playerObject.PlayerObject != null)
                 {
-                    // Call an RPC to despawn the player object
                     DespawnPlayerServerRpc(playerObject.ClientId);
                 }
             }
 
-            // Reset roles and counts
             rolesAssigned.Clear();
             numberOfBosses.Value = 0;
             numberOfWorkers.Value = 0;
 
-
-            // Set the flag to indicate the player is returning to the room
-            VariableHolder.isFromEndGameToRoom = true;
-
-            // Optionally, you can despawn the GameManager itself if needed
             NetworkManager.Singleton.Shutdown();
         }
     }

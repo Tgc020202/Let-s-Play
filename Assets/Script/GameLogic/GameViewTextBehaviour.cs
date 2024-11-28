@@ -15,6 +15,8 @@ public class GameViewTextBehaviour : NetworkBehaviour
     void Start()
     {
         BackgroundMusic = GameObject.Find("AudioManager/BossBackgroundMusic").GetComponent<AudioSource>();
+        BackgroundMusic.Play(0);
+
         timeRemaining = timerDuration.Value;
         UpdateTimerText();
     }
@@ -42,14 +44,12 @@ public class GameViewTextBehaviour : NetworkBehaviour
         UpdateTimerText();
     }
 
-    // Method to update the timer text on the UI
     void UpdateTimerText()
     {
         int secondsRemaining = Mathf.CeilToInt(timeRemaining);
         gameDuration.text = $"{secondsRemaining}s";
     }
 
-    // Method to handle the end of the game
     [ServerRpc]
     public void EndGameServerRpc(bool isBossWin)
     {

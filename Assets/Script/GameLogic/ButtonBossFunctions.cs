@@ -12,6 +12,7 @@ public class ButtonBossFunctions : MonoBehaviour
     public Button catchButton;
     private Text runButtonText;
 
+    // Panels
     public GameObject GameViewUI;
     public GameObject MapDesign;
     public GameObject GuidanceUI;
@@ -78,10 +79,6 @@ public class ButtonBossFunctions : MonoBehaviour
         targetPlayer = collisionTriggerDisplay.targetPlayer;
         canCatchPlayer = collisionTriggerDisplay.canCatchPlayer;
 
-        Debug.Log("targetPlayer: " + targetPlayer);
-        Debug.Log("canCatchPlayer: " + canCatchPlayer);
-        Debug.Log("isImmuneToCatch: " + isImmuneToCatch);
-
         if (playerNetworkObject != null && playerNetworkObject.IsOwner && canCatchPlayer && targetPlayer != null)
         {
             Debug.Log("Catch attempt on player: " + targetPlayer.GetComponent<NetworkObject>().NetworkObjectId);
@@ -121,7 +118,6 @@ public class ButtonBossFunctions : MonoBehaviour
 
         if (targetNetworkObject != null)
         {
-            Debug.Log($"Catching player: {targetPlayerId}");
             var targetPlayerManager = targetNetworkObject.GetComponent<PlayerManager>();
 
             if (targetPlayerManager != null && !targetPlayerManager.isImmuneToCatch)
@@ -129,8 +125,10 @@ public class ButtonBossFunctions : MonoBehaviour
                 targetPlayerManager.SetVisibilityServerRpc(false);
                 targetPlayerManager.SetColliderServerRpc(false);
 
+                Debug.Log("start run");
                 // Decrease the worker count when a player is caught
                 GameObject.FindObjectOfType<GameManager>()?.UpdateWorkerCountRequest(-1);
+                Debug.Log("end run");
             }
         }
     }

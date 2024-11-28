@@ -14,6 +14,8 @@ public class EndGameSceneBehaviour : MonoBehaviourPunCallbacks
     private bool isTransitioning = false;
 
     private int numberOfPlayers;
+    private int maxNumberOfBosses;
+    private int maxNumberOfWorkers;
     private int currentMapIndex;
     private int currentModeIndex;
     private string roomName;
@@ -24,6 +26,8 @@ public class EndGameSceneBehaviour : MonoBehaviourPunCallbacks
 
         // Get temporary room info
         numberOfPlayers = RoomManager.Instance.numberOfPlayers;
+        maxNumberOfBosses = RoomManager.Instance.maxNumberOfBosses;
+        maxNumberOfWorkers = RoomManager.Instance.maxNumberOfWorkers;
         currentMapIndex = RoomManager.Instance.currentMapIndex;
         currentModeIndex = RoomManager.Instance.currentModeIndex;
         roomName = RoomManager.Instance.roomName;
@@ -34,12 +38,12 @@ public class EndGameSceneBehaviour : MonoBehaviourPunCallbacks
         // Ensure only the MasterClient recreates the room
         if (PhotonNetwork.IsMasterClient)
         {
-            PhotonNetwork.LeaveRoom();
+            OnLeaveRoom();
             StartCoroutine(OnRecreateRoomSetup());
         }
         else
         {
-            PhotonNetwork.LeaveRoom();
+            OnLeaveRoom();
             StartCoroutine(RejoinRoomAfterDelay());
         }
     }
@@ -56,22 +60,21 @@ public class EndGameSceneBehaviour : MonoBehaviourPunCallbacks
         yield return new WaitForSeconds(2f);
         BackgroundMusic.Stop();
 
-        // All players return to the waiting room
         OnReturnWaitingRoom();
     }
 
     private IEnumerator OnRecreateRoomSetup()
     {
-        // Wait for Photon to process room leave
-        yield return new WaitForSeconds(5f);
+        yield return new WaitForSeconds(2f);
 
         // Store variables
         RoomManager.Instance.numberOfPlayers = numberOfPlayers;
+        RoomManager.Instance.maxNumberOfBosses = maxNumberOfBosses;
+        RoomManager.Instance.maxNumberOfWorkers = maxNumberOfWorkers;
         RoomManager.Instance.currentMapIndex = currentMapIndex;
         RoomManager.Instance.currentModeIndex = currentModeIndex;
         RoomManager.Instance.roomName = roomName;
 
-        // Create new room with the same name and properties
         RoomOptions options = new RoomOptions
         {
             MaxPlayers = (byte)numberOfPlayers,
@@ -79,35 +82,30 @@ public class EndGameSceneBehaviour : MonoBehaviourPunCallbacks
             IsVisible = true
         };
 
-        // Custom room properties if needed
         Hashtable customProperties = new Hashtable { { "roomCode", roomName } };
         options.CustomRoomProperties = customProperties;
 
         PhotonNetwork.CreateRoom(roomName, options, null);
 
-        // Wait for room creation to finish
         yield return new WaitForSeconds(2f);
         returnButton.interactable = true;
     }
 
     private IEnumerator RejoinRoomAfterDelay()
     {
-        // Join the room again after a short delay
-        yield return new WaitForSeconds(20f);
+        yield return new WaitForSeconds(10f);
 
-        // After the MasterClient recreates the room, join it
         PhotonNetwork.JoinRoom(roomName);
         returnButton.interactable = true;
     }
 
     private void OnReturnWaitingRoom()
     {
-        // Load the waiting room scene for all players
         PhotonNetwork.LoadLevel("WaitingRoomScene");
     }
 
-    // public override void OnDisconnected(DisconnectCause cause)
-    // {
-    //     SceneManager.LoadScene("LobbyScene");
-    // }
+    private void OnLeaveRoom()
+    {
+        PhotonNetwork.LeaveRoom();
+    }
 }

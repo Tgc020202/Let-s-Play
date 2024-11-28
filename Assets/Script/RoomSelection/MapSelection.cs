@@ -6,10 +6,15 @@ public class MapSelection : MonoBehaviour
     public Button previousButton;
     public Button nextButton;
     public Button mapButton;
+    public Button backButon;
     public Text mapText;
+
+    // Panels
     public GameObject TotalNumberUI;
     public GameObject MapUI;
     public GameObject ModeUI;
+    public GameObject PlayerSetupUI;
+    public GameObject RoomSetupUI;
 
     public int currentMapIndex = 1;
     private const int maxMaps = 4;
@@ -20,6 +25,7 @@ public class MapSelection : MonoBehaviour
         nextButton.onClick.AddListener(OnNextClicked);
         previousButton.onClick.AddListener(OnPreviousClicked);
         mapButton.onClick.AddListener(OnMapButtonClicked);
+        backButon.onClick.AddListener(OnBackButonClicked);
 
         // Initialize the map name and button states
         UpdateMapText();
@@ -62,5 +68,14 @@ public class MapSelection : MonoBehaviour
         TotalNumberUI.SetActive(true);
         MapUI.SetActive(false);
         ModeUI.SetActive(false);
+    }
+
+    void OnBackButonClicked()
+    {
+        TotalNumberUI.SetActive(false);
+        MapUI.SetActive(false);
+        ModeUI.SetActive(false);
+        PlayerSetupUI.SetActive(true);
+        RoomSetupUI.SetActive(false);
     }
 }

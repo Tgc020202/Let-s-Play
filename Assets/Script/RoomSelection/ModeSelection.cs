@@ -8,7 +8,14 @@ public class ModeSelection : MonoBehaviour
     public Button previousButton;
     public Button nextButton;
     public Button modeButton;
+    public Button backButon;
     public Text modeText;
+
+    // Panels
+    public GameObject TotalNumberUI;
+    public GameObject MapUI;
+    public GameObject ModeUI;
+
     public int currentModeIndex = 1;
     private const int maxModes = 3;
 
@@ -18,6 +25,7 @@ public class ModeSelection : MonoBehaviour
         nextButton.onClick.AddListener(OnNextClicked);
         previousButton.onClick.AddListener(OnPreviousClicked);
         modeButton.onClick.AddListener(OnModeButtonClicked);
+        backButon.onClick.AddListener(OnBackButtonClicked);
 
         // Initialize the map name and button states
         UpdateModeText();
@@ -68,5 +76,12 @@ public class ModeSelection : MonoBehaviour
     void OnModeButtonClicked()
     {
         Debug.Log("Mode: " + currentModeIndex);
+    }
+
+    void OnBackButtonClicked()
+    {
+        TotalNumberUI.SetActive(true);
+        MapUI.SetActive(false);
+        ModeUI.SetActive(false);
     }
 }
