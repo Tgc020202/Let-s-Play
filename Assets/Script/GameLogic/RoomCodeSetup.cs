@@ -9,8 +9,8 @@ public class RoomCodeSetup : MonoBehaviour
         // Assign room code or "XXXX" if null
         if (roomNameText != null)
         {
-            string roomName = RoomManager.Instance.roomName;
-            roomNameText.text = !string.IsNullOrEmpty(roomName) ? roomName : "XXXX";
+            string roomName = RoomManager.Instance != null && !string.IsNullOrEmpty(RoomManager.Instance.roomName) ? RoomManager.Instance.roomName : "XXXX";
+            roomNameText.text = roomName;
         }
     }
 }

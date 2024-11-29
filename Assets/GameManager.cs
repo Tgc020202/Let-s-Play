@@ -22,8 +22,8 @@ public class GameManager : NetworkBehaviour
 
     void Start()
     {
-        maxNumberOfBosses = RoomManager.Instance.maxNumberOfBosses;
-        maxNumberOfWorkers = RoomManager.Instance.maxNumberOfWorkers;
+        maxNumberOfBosses = RoomManager.Instance != null ? RoomManager.Instance.maxNumberOfBosses : VariableHolder.defaultMaxNumberOfBosses;
+        maxNumberOfWorkers = RoomManager.Instance != null ? RoomManager.Instance.maxNumberOfWorkers : VariableHolder.defaultMaxNumberOfWorkers;
     }
 
     void Update()

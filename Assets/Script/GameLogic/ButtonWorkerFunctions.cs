@@ -8,9 +8,11 @@ public class ButtonWorkerFunctions : MonoBehaviour
     private NetworkObject playerNetworkObject;
     public PlayerMovement playerMovement;
     public CollisionTriggerDisplay collisionTriggerDisplay;
+    public TaskManager taskManager;
     public Button runButton;
     public Button redButton;
     public Button greenButton;
+    public Button completeTaskButton;   // test
     public GameObject GameViewUI;
     public GameObject MapDesign;
     public GameObject GuidanceUI;
@@ -33,6 +35,9 @@ public class ButtonWorkerFunctions : MonoBehaviour
         MapDesign.SetActive(false);
         GuidanceUI.SetActive(true);
         NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
+
+        // test
+        completeTaskButton.onClick.AddListener(OnCompleteTaskClicked);
     }
 
     void Update()
@@ -161,5 +166,22 @@ public class ButtonWorkerFunctions : MonoBehaviour
                 targetPlayerManager.SetImmunityServerRpc(false);
             }
         }
+    }
+
+    // test
+    void OnCompleteTaskClicked()
+    {
+        var playerNetworkObject = NetworkManager.Singleton.LocalClient?.PlayerObject.GetComponent<NetworkObject>();
+        if (playerNetworkObject != null && playerNetworkObject.IsOwner)
+        {
+            Debug.Log("Worker completed the task!");
+            CompleteTaskServerRpc();
+        }
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    void CompleteTaskServerRpc()
+    {
+        taskManager.CompleteTask();
     }
 }

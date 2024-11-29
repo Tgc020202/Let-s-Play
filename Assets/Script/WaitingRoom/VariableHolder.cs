@@ -11,5 +11,5 @@ public static class VariableHolder
 
     public static int defaultTotalNumberOfPlayer = 4;
     public static int defaultMaxNumberOfBosses = 1;
-    public static int defaultMaxNumberOfWorkers = 3;
+    public static int defaultMaxNumberOfWorkers = 1;
 }

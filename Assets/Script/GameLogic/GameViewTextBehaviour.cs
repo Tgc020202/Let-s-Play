@@ -68,4 +68,16 @@ public class GameViewTextBehaviour : NetworkBehaviour
 
         SceneManager.LoadScene("EndGameScene");
     }
+
+    [ServerRpc]
+    public void ReduceTimeDurationServerRpc(float seconds)
+    {
+        timeRemaining = Mathf.Max(0, timeRemaining - seconds);
+        timerDuration.Value = timeRemaining;
+
+        if (timeRemaining == 0)
+        {
+            EndGameServerRpc(false);
+        }
+    }
 }
