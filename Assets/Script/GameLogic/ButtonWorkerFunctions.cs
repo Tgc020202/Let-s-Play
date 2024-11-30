@@ -36,7 +36,7 @@ public class ButtonWorkerFunctions : MonoBehaviour
         GuidanceUI.SetActive(true);
         NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
 
-        // test
+        // Test button for completing the task
         completeTaskButton.onClick.AddListener(OnCompleteTaskClicked);
     }
 
@@ -73,6 +73,7 @@ public class ButtonWorkerFunctions : MonoBehaviour
         }
     }
 
+    // OnClick for the Run button
     void OnRunButtonClicked()
     {
         if (playerNetworkObject != null && playerNetworkObject.IsOwner && canUseRunButton)
@@ -80,6 +81,8 @@ public class ButtonWorkerFunctions : MonoBehaviour
             var playerManager = playerNetworkObject.GetComponent<PlayerManager>();
             if (playerManager != null && !playerManager.isImmuneToCatch)
             {
+                // Task 2: Run Button Press
+                taskManager.RunButtonPressed();
                 StartCoroutine(SpeedBoost());
             }
             else
@@ -89,6 +92,7 @@ public class ButtonWorkerFunctions : MonoBehaviour
         }
     }
 
+    // OnClick for the Red button
     void OnRedButtonClicked()
     {
         if (playerNetworkObject != null && playerNetworkObject.IsOwner)
@@ -98,9 +102,13 @@ public class ButtonWorkerFunctions : MonoBehaviour
 
             // Decrease the worker count when a player is caught
             GameObject.FindObjectOfType<GameManager>()?.UpdateWorkerCountRequest(-1);
+
+            // Task 1: Red Button Press
+            taskManager.RedButtonPressed();
         }
     }
 
+    // OnClick for the Green button (helping another player)
     void OnGreenButtonClicked()
     {
         targetPlayer = collisionTriggerDisplay.targetPlayer;
@@ -114,10 +122,11 @@ public class ButtonWorkerFunctions : MonoBehaviour
         }
     }
 
+    // Coroutine to handle the speed boost duration
     IEnumerator SpeedBoost()
     {
         canUseRunButton = false;
-        playerMovement.IncreaseSpeedServerRpc(true);
+        playerMovement.IncreaseSpeedServerRpc(true);  // Server call to increase speed
 
         for (int i = 20; i > 0; i--)
         {
@@ -125,13 +134,14 @@ public class ButtonWorkerFunctions : MonoBehaviour
             yield return new WaitForSeconds(1);
             if (i == 16)
             {
-                playerMovement.IncreaseSpeedServerRpc(false);
+                playerMovement.IncreaseSpeedServerRpc(false);  // Disable speed after 16 seconds
             }
         }
         runButtonText.text = "Run";
         canUseRunButton = true;
     }
 
+    // Skips the guidance UI after a set time or button press
     void OnSkipGuidanceUI()
     {
         MapDesign.SetActive(true);
@@ -139,6 +149,7 @@ public class ButtonWorkerFunctions : MonoBehaviour
         GuidanceUI.SetActive(false);
     }
 
+    // Server RPC to set immunity for a player
     [ServerRpc(RequireOwnership = false)]
     public void SetImmunityServerRpc(ulong targetPlayerId, bool enabled)
     {
@@ -153,6 +164,7 @@ public class ButtonWorkerFunctions : MonoBehaviour
         }
     }
 
+    // Server RPC to help another player
     [ServerRpc(RequireOwnership = false)]
     public void HelpPlayerServerRpc(ulong targetPlayerId)
     {
@@ -168,20 +180,14 @@ public class ButtonWorkerFunctions : MonoBehaviour
         }
     }
 
-    // test
+    // Test function to simulate completing a task (can be triggered manually)
     void OnCompleteTaskClicked()
     {
         var playerNetworkObject = NetworkManager.Singleton.LocalClient?.PlayerObject.GetComponent<NetworkObject>();
         if (playerNetworkObject != null && playerNetworkObject.IsOwner)
         {
             Debug.Log("Worker completed the task!");
-            CompleteTaskServerRpc();
+            taskManager.CompleteTaskServerRpc();
         }
-    }
-
-    [ServerRpc(RequireOwnership = false)]
-    void CompleteTaskServerRpc()
-    {
-        taskManager.CompleteTask();
     }
 }

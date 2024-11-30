@@ -4000,10 +4000,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   tasks:
-  - 'Task 1: Collect Items'
-  - 'Task 2: Solve Puzzle'
-  - 'Task 3: Fix Machine'
+  - 'Task 1: Use Red Button 5 times.'
+  - 'Task 2: Use Run Button 3 times.'
+  - 'Task 3: Close to Boss 1 time.'
   taskText: {fileID: 1381034719}
+  gameViewTextBehaviour: {fileID: 825150951}
+  gameManager: {fileID: 825150952}
 --- !u!1 &833240824
 GameObject:
   m_ObjectHideFlags: 0

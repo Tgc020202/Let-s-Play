@@ -9,7 +9,7 @@ public static class VariableHolder
     public enum Role { Boss, Worker }
     public static Role currentRole = Role.Worker;
 
-    public static int defaultTotalNumberOfPlayer = 4;
+    public static int defaultTotalNumberOfPlayer = 3;
     public static int defaultMaxNumberOfBosses = 1;
-    public static int defaultMaxNumberOfWorkers = 1;
+    public static int defaultMaxNumberOfWorkers = 2;
 }

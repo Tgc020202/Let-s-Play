@@ -69,13 +69,14 @@ public class GameViewTextBehaviour : NetworkBehaviour
         SceneManager.LoadScene("EndGameScene");
     }
 
-    [ServerRpc]
+    // Reduce time duration when task completed
+    [ServerRpc(RequireOwnership = false)]
     public void ReduceTimeDurationServerRpc(float seconds)
     {
         timeRemaining = Mathf.Max(0, timeRemaining - seconds);
         timerDuration.Value = timeRemaining;
 
-        if (timeRemaining == 0)
+        if (timeRemaining <= 0)
         {
             EndGameServerRpc(false);
         }

@@ -13,7 +13,7 @@ public class GameManager : NetworkBehaviour
     private NetworkVariable<int> numberOfBosses = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
     private NetworkVariable<int> numberOfWorkers = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
-    private Dictionary<ulong, bool> rolesAssigned = new Dictionary<ulong, bool>();
+    public Dictionary<ulong, bool> rolesAssigned = new Dictionary<ulong, bool>();
 
     private int maxNumberOfBosses;
     private int maxNumberOfWorkers;
