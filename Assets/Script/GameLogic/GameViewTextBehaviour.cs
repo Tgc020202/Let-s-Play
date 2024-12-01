@@ -8,21 +8,41 @@ public class GameViewTextBehaviour : NetworkBehaviour
     public Text gameDuration;
     public Text roleText;
 
+    public GameObject BossControllerUI;
+    public GameObject WorkerControllerUI;
+
     private AudioSource BackgroundMusic;
+
     public NetworkVariable<float> timerDuration = new NetworkVariable<float>(200f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
     private float timeRemaining;
+    private bool hasMusicStarted = false;
 
     void Start()
     {
-        BackgroundMusic = GameObject.Find("AudioManager/BossBackgroundMusic").GetComponent<AudioSource>();
-        BackgroundMusic.Play(0);
-
         timeRemaining = timerDuration.Value;
         UpdateTimerText();
     }
 
     void Update()
     {
+        if (!hasMusicStarted)
+        {
+            if (BossControllerUI.activeSelf)
+            {
+                BackgroundMusic = GameObject.FindObjectOfType<BossAudioController>()?.BackgroundMusic;
+            }
+            else if (WorkerControllerUI.activeSelf)
+            {
+                BackgroundMusic = GameObject.FindObjectOfType<WorkerAudioController>()?.BackgroundMusic;
+            }
+
+            if (BackgroundMusic != null)
+            {
+                BackgroundMusic.Play();
+                hasMusicStarted = true;
+            }
+        }
+
         if (IsServer)
         {
             if (timeRemaining > 0)
@@ -59,8 +79,12 @@ public class GameViewTextBehaviour : NetworkBehaviour
     [ClientRpc]
     void EndGameClientRpc(bool isBossWin)
     {
-        BackgroundMusic.Stop();
-        VariableHolder.isBossWin = isBossWin;
+        if (BackgroundMusic != null)
+        {
+            BackgroundMusic.Stop();
+        }
+
+        RoomManager.Instance.isBossWin = isBossWin;
 
         NetworkManager.Singleton.Shutdown();
         Destroy(NetworkManager.Singleton.gameObject);
@@ -69,7 +93,6 @@ public class GameViewTextBehaviour : NetworkBehaviour
         SceneManager.LoadScene("EndGameScene");
     }
 
-    // Reduce time duration when task completed
     [ServerRpc(RequireOwnership = false)]
     public void ReduceTimeDurationServerRpc(float seconds)
     {

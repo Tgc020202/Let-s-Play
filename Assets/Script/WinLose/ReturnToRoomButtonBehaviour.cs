@@ -8,6 +8,7 @@ using System.Collections;
 
 public class EndGameSceneBehaviour : MonoBehaviourPunCallbacks
 {
+    public Button winLoseButton;
     public Button returnButton;
     private AudioSource BackgroundMusic;
 
@@ -22,15 +23,51 @@ public class EndGameSceneBehaviour : MonoBehaviourPunCallbacks
 
     void Start()
     {
-        BackgroundMusic = GameObject.Find("AudioManager/BackgroundWinMusic").GetComponent<AudioSource>();
+        BackgroundMusic = GameObject.Find("AudioManager/BackgroundMusic")?.GetComponent<AudioSource>();
 
-        // Get temporary room info
-        numberOfPlayers = RoomManager.Instance.numberOfPlayers;
-        maxNumberOfBosses = RoomManager.Instance.maxNumberOfBosses;
-        maxNumberOfWorkers = RoomManager.Instance.maxNumberOfWorkers;
-        currentMapIndex = RoomManager.Instance.currentMapIndex;
-        currentModeIndex = RoomManager.Instance.currentModeIndex;
-        roomName = RoomManager.Instance.roomName;
+        if (BackgroundMusic != null)
+        {
+            BackgroundMusic.Play();
+        }
+        else
+        {
+            Debug.LogError($"BackgroundMusic not found at AudioManager/BackgroundMusic. Ensure AudioManager is set up correctly.");
+        }
+
+        if (RoomManager.Instance != null)
+        {
+            if (winLoseButton != null)
+            {
+                Text winLoseMessage = winLoseButton.GetComponentInChildren<Text>();
+                if (winLoseMessage != null)
+                {
+                    winLoseMessage.text = RoomManager.Instance.isBossWin ? "Boss wins!!!\nAll of you back to work!!!" : "Staff wins!!!\nLet's go back home!!!";
+                }
+                else
+                {
+                    Debug.LogError("No Text component found in the button's children.");
+                }
+            }
+        }
+        else
+        {
+            Debug.LogError("RoomManager.Instance is null! Please initialize it.");
+        }
+
+        if (RoomManager.Instance != null)
+        {
+            // Get temporary room info
+            numberOfPlayers = RoomManager.Instance.numberOfPlayers;
+            maxNumberOfBosses = RoomManager.Instance.maxNumberOfBosses;
+            maxNumberOfWorkers = RoomManager.Instance.maxNumberOfWorkers;
+            currentMapIndex = RoomManager.Instance.currentMapIndex;
+            currentModeIndex = RoomManager.Instance.currentModeIndex;
+            roomName = RoomManager.Instance.roomName;
+        }
+        else
+        {
+            Debug.LogError("RoomManager.Instance is null! Please initialize it.");
+        }
 
         returnButton.onClick.AddListener(OnReturnButtonClick);
         returnButton.interactable = false;

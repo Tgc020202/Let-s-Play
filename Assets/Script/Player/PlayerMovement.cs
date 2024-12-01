@@ -6,6 +6,8 @@ public class PlayerMovement : NetworkBehaviour
     public float speed = 5f; // Default speed
     private Rigidbody2D rb;
     private Vector2 moveInput;
+    private Vector2 fixedPosition;
+    private bool isStopped = false;
 
     void Start()
     {
@@ -24,6 +26,11 @@ public class PlayerMovement : NetworkBehaviour
     void Update()
     {
         if (!IsOwner) return;
+
+        if (isStopped)
+        {
+            rb.position = fixedPosition;
+        }
 
         moveInput = Vector2.zero;
 
@@ -62,7 +69,20 @@ public class PlayerMovement : NetworkBehaviour
     [ServerRpc]
     public void StopServerRpc(bool isStop)
     {
-        speed = isStop ? 0f : 5f;
-        Debug.Log("Speed become: " + speed);
+        isStopped = isStop;
+        
+        if (isStop)
+        {
+            fixedPosition = rb.position;
+            rb.constraints = RigidbodyConstraints2D.FreezeAll;
+            speed = 0f;
+        }
+        else
+        {
+            rb.constraints = RigidbodyConstraints2D.None;
+            speed = 5f;
+        }
+
+        Debug.Log($"Speed set to: {speed}. Rigidbody constraints updated.");
     }
 }

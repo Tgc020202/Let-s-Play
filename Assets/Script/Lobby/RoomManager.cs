@@ -13,6 +13,7 @@ public class RoomManager : MonoBehaviour
     public int currentMapIndex;
     public int currentModeIndex;
     public string roomName;
+    public bool isBossWin;
 
     private void Awake()
     {

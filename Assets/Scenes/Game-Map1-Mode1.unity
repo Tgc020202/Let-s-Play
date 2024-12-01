@@ -1245,10 +1245,10 @@ AudioSource:
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 8300000, guid: 51543b0100ed2e0459df2b410dcce580, type: 3}
-  m_PlayOnAwake: 1
+  m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
-  Loop: 0
+  Loop: 1
   Mute: 0
   Spatialize: 0
   SpatializePostEffects: 0
@@ -3327,7 +3327,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &730508854
 RectTransform:
   m_ObjectHideFlags: 0
@@ -3453,12 +3453,12 @@ GameObject:
   - component: {fileID: 744558477}
   - component: {fileID: 744558478}
   m_Layer: 0
-  m_Name: WorkerBackgroundLoseMusic
+  m_Name: WorkerBackgroundMusic
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &744558477
 Transform:
   m_ObjectHideFlags: 0
@@ -3485,10 +3485,10 @@ AudioSource:
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 8300000, guid: eaa4d1f833404414884b742539067710, type: 3}
-  m_PlayOnAwake: 1
+  m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
-  Loop: 0
+  Loop: 1
   Mute: 0
   Spatialize: 0
   SpatializePostEffects: 0
@@ -3581,6 +3581,7 @@ GameObject:
   - component: {fileID: 780719368}
   - component: {fileID: 780719370}
   - component: {fileID: 780719369}
+  - component: {fileID: 780719371}
   m_Layer: 5
   m_Name: WorkerController
   m_TagString: Untagged
@@ -3647,6 +3648,19 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 780719367}
   m_CullTransparentMesh: 1
+--- !u!114 &780719371
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 780719367}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 32699d4bee93f1940bf85abaf2a6dcfd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  BackgroundMusic: {fileID: 744558478}
 --- !u!1 &803972166
 GameObject:
   m_ObjectHideFlags: 0
@@ -3869,6 +3883,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   gameDuration: {fileID: 257642501}
   roleText: {fileID: 231738125}
+  BossControllerUI: {fileID: 1335156412}
+  WorkerControllerUI: {fileID: 780719367}
+  timerDuration:
+    m_InternalValue: 200
 --- !u!114 &825150952
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3885,6 +3903,7 @@ MonoBehaviour:
   BossControllerUI: {fileID: 1335156412}
   WorkerControllerUI: {fileID: 780719367}
   BasicControllerUI: {fileID: 1113545753}
+  listBossAssigned: 
 --- !u!4 &825150953
 Transform:
   m_ObjectHideFlags: 0
@@ -4024,7 +4043,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &833240825
 RectTransform:
   m_ObjectHideFlags: 0
@@ -6900,6 +6919,7 @@ GameObject:
   - component: {fileID: 1335156413}
   - component: {fileID: 1335156415}
   - component: {fileID: 1335156414}
+  - component: {fileID: 1335156416}
   m_Layer: 5
   m_Name: BossController
   m_TagString: Untagged
@@ -6966,6 +6986,19 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1335156412}
   m_CullTransparentMesh: 1
+--- !u!114 &1335156416
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1335156412}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ecd1bc52a3c46c1488c37ec318f7f1bf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  BackgroundMusic: {fileID: 253803546}
 --- !u!1 &1348757535
 GameObject:
   m_ObjectHideFlags: 0
