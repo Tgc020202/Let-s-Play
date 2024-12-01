@@ -9,7 +9,7 @@ public class GameViewTextBehaviour : NetworkBehaviour
     public Text roleText;
 
     private AudioSource BackgroundMusic;
-    private NetworkVariable<float> timerDuration = new NetworkVariable<float>(200f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+    public NetworkVariable<float> timerDuration = new NetworkVariable<float>(200f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
     private float timeRemaining;
 
     void Start()

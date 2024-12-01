@@ -13,7 +13,8 @@ public class GameManager : NetworkBehaviour
     private NetworkVariable<int> numberOfBosses = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
     private NetworkVariable<int> numberOfWorkers = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
-    public Dictionary<ulong, bool> rolesAssigned = new Dictionary<ulong, bool>();
+    private Dictionary<ulong, bool> rolesAssigned = new Dictionary<ulong, bool>();
+    public List<ulong> listBossAssigned = new List<ulong>();
 
     private int maxNumberOfBosses;
     private int maxNumberOfWorkers;
@@ -103,6 +104,7 @@ public class GameManager : NetworkBehaviour
         Debug.Log("Assigning Boss role to clientId: " + clientId);
         numberOfBosses.Value++;
         rolesAssigned[clientId] = true;
+        listBossAssigned.Add(clientId);
         UpdateRoleUIClientRpc(clientId, "Boss");
     }
 
@@ -174,6 +176,7 @@ public class GameManager : NetworkBehaviour
             }
 
             rolesAssigned.Clear();
+            listBossAssigned.Clear();
             numberOfBosses.Value = 0;
             numberOfWorkers.Value = 0;
 

@@ -13,14 +13,15 @@ public class TaskManager : NetworkBehaviour
     };
 
     public Text taskText;
+    public GameViewTextBehaviour gameViewTextBehaviour;
+    public GameManager gameManager;
 
     private NetworkVariable<int> currentTaskIndex = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
     private NetworkVariable<int> taskIndicator1 = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
     private NetworkVariable<int> taskIndicator2 = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
     private NetworkVariable<bool> taskIndicator3 = new NetworkVariable<bool>(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
-    public GameViewTextBehaviour gameViewTextBehaviour;
-    public GameManager gameManager;
+    private bool isTaskClosed = false;
 
     private void Start()
     {
@@ -39,7 +40,12 @@ public class TaskManager : NetworkBehaviour
 
     private void Update()
     {
-        if (IsServer && currentTaskIndex.Value == 2)
+        if (gameViewTextBehaviour.timerDuration.Value <= 50f && !isTaskClosed)
+        {
+            TaskClosed();
+        }
+
+        if (IsServer && currentTaskIndex.Value == 2 && !isTaskClosed)
         {
             CheckProximityToBoss();
         }
@@ -64,6 +70,8 @@ public class TaskManager : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     private void RedButtonPressedServerRpc()
     {
+        if (isTaskClosed) return;
+
         if (currentTaskIndex.Value == 0)
         {
             taskIndicator1.Value++;
@@ -77,6 +85,8 @@ public class TaskManager : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     private void RunButtonPressedServerRpc()
     {
+        if (isTaskClosed) return;
+
         if (currentTaskIndex.Value == 1)
         {
             taskIndicator2.Value++;
@@ -89,92 +99,112 @@ public class TaskManager : NetworkBehaviour
 
     private void CheckProximityToBoss()
     {
-        ulong bossClientId = GetBossClientId();
-        if (bossClientId == 0) return;
+        if (isTaskClosed) return;
 
-        var boss = NetworkManager.Singleton.ConnectedClients[bossClientId].PlayerObject;
+        List<ulong> bossClientIds = GetBossClientIds();
+        if (bossClientIds.Count == 0) return;
 
-        foreach (var client in NetworkManager.Singleton.ConnectedClientsList)
+        foreach (ulong bossClientId in bossClientIds)
         {
-            if (client.ClientId != bossClientId)
+            Debug.Log("Boss Id: " + bossClientId);
+
+            if (!NetworkManager.Singleton.ConnectedClients.ContainsKey(bossClientId))
             {
-                var player = client.PlayerObject;
-                if (player != null)
+                Debug.Log("Boss ID not found in connected clients.");
+                continue;
+            }
+
+            var boss = NetworkManager.Singleton.ConnectedClients[bossClientId].PlayerObject;
+            if (boss == null) continue;
+
+            foreach (var client in NetworkManager.Singleton.ConnectedClientsList)
+            {
+                if (client.ClientId != bossClientId)
                 {
-                    float distance = Vector3.Distance(player.transform.position, boss.transform.position);
-                    if (distance < 2.0f)
+                    var player = client.PlayerObject;
+                    if (player != null)
                     {
-                        taskIndicator3.Value = true;
-                        break;
+                        float distance = Vector3.Distance(player.transform.position, boss.transform.position);
+                        Debug.Log("Distance to boss: " + distance);
+
+                        if (distance < 3.0f)
+                        {
+                            Debug.Log("Player is close enough to the boss!");
+                            taskIndicator3.Value = true;
+                            break;
+                        }
                     }
                 }
             }
         }
     }
 
-    private ulong GetBossClientId()
+
+    private List<ulong> GetBossClientIds()
     {
-        foreach (var client in gameManager.rolesAssigned)
+        if (gameManager.listBossAssigned.Count > 0)
         {
-            if (client.Value)
+            foreach (var bossId in gameManager.listBossAssigned)
             {
-                return client.Key;
+                Debug.Log("BossId: " + bossId);
             }
+            return new List<ulong>(gameManager.listBossAssigned);
         }
-        return 0;
+
+        Debug.Log("No Boss Assigned");
+        return new List<ulong>();
     }
+
+
 
     private void UpdateTaskText(int oldValue, int newValue)
     {
-        taskText.text = tasks[newValue];
-        Debug.Log($"Task Updated: {tasks[newValue]}");
-        if (newValue == 0)
+        if (isTaskClosed) return;
+
+        switch (newValue)
         {
-            taskText.text = $"{tasks[newValue]} (0/5)";
-        }
-        else if (newValue == 1)
-        {
-            taskText.text = $"{tasks[newValue]} (0/3)";
-        }
-        else if (newValue == 2)
-        {
-            taskText.text = $"{tasks[newValue]} (Incomplete)";
+            case 0:
+                taskText.text = $"{tasks[newValue]} (0/5)";
+                break;
+            case 1:
+                taskText.text = $"{tasks[newValue]} (0/3)";
+                break;
+            case 2:
+                taskText.text = $"{tasks[newValue]} (Incomplete)";
+                break;
         }
     }
 
     private void UpdateRedButtonCount(int oldValue, int newValue)
     {
-        if (currentTaskIndex.Value == 0)
-        {
-            taskText.text = $"{tasks[currentTaskIndex.Value]} ({newValue}/5)";
-        }
+        if (isTaskClosed || currentTaskIndex.Value != 0) return;
+
+        taskText.text = $"{tasks[currentTaskIndex.Value]} ({newValue}/5)";
     }
 
     private void UpdateRunButtonCount(int oldValue, int newValue)
     {
-        if (currentTaskIndex.Value == 1)
-        {
-            taskText.text = $"{tasks[currentTaskIndex.Value]} ({newValue}/3)";
-        }
+        if (isTaskClosed || currentTaskIndex.Value != 1) return;
+
+        taskText.text = $"{tasks[currentTaskIndex.Value]} ({newValue}/3)";
     }
 
     private void UpdateTask3Completion(bool oldValue, bool newValue)
     {
-        if (currentTaskIndex.Value == 2 && newValue)
-        {
-            taskText.text = $"{tasks[currentTaskIndex.Value]} (Completed)";
-            CompleteTaskServerRpc();
-        }
+        if (isTaskClosed || currentTaskIndex.Value != 2 || !newValue) return;
+
+        taskText.text = $"{tasks[currentTaskIndex.Value]} (Completed)";
+        CompleteTaskServerRpc();
     }
 
     // Complete Task
     [ServerRpc(RequireOwnership = false)]
     public void CompleteTaskServerRpc()
     {
+        if (isTaskClosed) return;
+
         ResetTaskIndicators();
-
         gameViewTextBehaviour.ReduceTimeDurationServerRpc(10f);
-
         GenerateNewTask();
     }
 
@@ -187,10 +217,20 @@ public class TaskManager : NetworkBehaviour
 
     private void GenerateNewTask()
     {
+        if (isTaskClosed) return;
+
         int newTaskIndex = Random.Range(0, tasks.Count);
         currentTaskIndex.Value = newTaskIndex;
     }
 
+    private void TaskClosed()
+    {
+        isTaskClosed = true;
+
+        // Clear the task text
+        taskText.text = "";
+        taskText.gameObject.SetActive(false);
+    }
 
     private void OnDestroy()
     {
