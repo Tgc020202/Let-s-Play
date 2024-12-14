@@ -3,6 +3,7 @@ using Photon.Realtime;
 using UnityEngine;
 using UnityEngine.UI;
 using Hashtable = ExitGames.Client.Photon.Hashtable;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.SceneManagement;
 
@@ -15,7 +16,8 @@ public class LobbyManager : MonoBehaviourPunCallbacks
     public Button publicButton;
     public Button privateButton;
     public Button modeButton;
-    public Button backButton;
+    public Button backButton1;
+    public Button backButton2;
     public InputField roomCodeInput;
     public NumberOfPlayerSelection numberOfPlayerSelection;
     public MapSelection mapSelection;
@@ -36,6 +38,10 @@ public class LobbyManager : MonoBehaviourPunCallbacks
     // Audio
     private AudioSource BackgroundMusic;
     private Dictionary<string, GameObject> uiDictionary;
+    public Animator CarAnimator;
+    public GameObject RedTrafficLight;
+    public GameObject GreenTrafficLight;
+    private bool isTransitioning = false;
     private bool isPrivate = false;
     private bool isConnectedToMaster = false;
 
@@ -81,11 +87,13 @@ public class LobbyManager : MonoBehaviourPunCallbacks
         publicButton.onClick.AddListener(() => OnSetPrivateClicked(false));
         privateButton.onClick.AddListener(() => OnSetPrivateClicked(true));
         modeButton.onClick.AddListener(OnCreateRoomButtonClicked);
-        backButton.onClick.AddListener(OnBackButtonClicked);
+        backButton1.onClick.AddListener(OnBackButtonClicked);
+        backButton2.onClick.AddListener(OnBackButtonClicked);
 
         roomCodeInput.onEndEdit.AddListener(OnRoomCodeInputEndEdit);
 
         ToggleUIActive("RoomSelectionUI", true);
+        GreenTrafficLight.SetActive(false);
     }
 
     // UI Handler
@@ -182,16 +190,30 @@ public class LobbyManager : MonoBehaviourPunCallbacks
         };
 
         Hashtable customProperties = new Hashtable { { "roomCode", roomCode } };
+
+        if (isTransitioning) return;
+        isTransitioning = true;
+        RedTrafficLight.SetActive(false);
+        GreenTrafficLight.SetActive(true);
+        CarAnimator.SetBool("isTurningToNextScene", true);
+
         PhotonNetwork.CreateRoom(roomName, options, null);
     }
 
     public override void OnCreatedRoom()
     {
-        SceneManager.LoadScene("WaitingRoomScene");
+        // Start a coroutine to delay the scene transition
+        StartCoroutine(DelayedSceneTransition("WaitingRoomScene"));
 
         string roomCode = roomNameInput.text;
         Hashtable customProperties = new Hashtable { { "roomCode", roomCode } };
         PhotonNetwork.CurrentRoom.SetCustomProperties(customProperties);
+    }
+
+    IEnumerator DelayedSceneTransition(string sceneName)
+    {
+        yield return new WaitForSeconds(2f);
+        SceneManager.LoadScene(sceneName);
     }
 
     private void OnRoomCodeInputEndEdit(string input)
@@ -215,8 +237,14 @@ public class LobbyManager : MonoBehaviourPunCallbacks
         // Store variables
         RoomManager.Instance.roomName = roomName;
 
+        if (isTransitioning) return;
+        isTransitioning = true;
+        RedTrafficLight.SetActive(false);
+        GreenTrafficLight.SetActive(true);
+        CarAnimator.SetBool("isTurningToNextScene", true);
+
         PhotonNetwork.JoinRoom(roomName);
-        SceneManager.LoadScene("WaitingRoomScene");
+        StartCoroutine(DelayedSceneTransition("WaitingRoomScene"));
     }
 
     public override void OnRoomListUpdate(List<RoomInfo> roomList)
@@ -289,8 +317,15 @@ public class LobbyManager : MonoBehaviourPunCallbacks
 
                         // Store variables
                         RoomManager.Instance.roomName = room.Name;
+
+                        if (isTransitioning) return;
+                        isTransitioning = true;
+                        RedTrafficLight.SetActive(false);
+                        GreenTrafficLight.SetActive(true);
+                        CarAnimator.SetBool("isTurningToNextScene", true);
+
                         PhotonNetwork.JoinRoom(room.Name);
-                        SceneManager.LoadScene("WaitingRoomScene");
+                        StartCoroutine(DelayedSceneTransition("WaitingRoomScene"));
                     });
                 }
             }

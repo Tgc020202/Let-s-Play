@@ -16,14 +16,11 @@ public class StartGameManager : MonoBehaviour
 
     void Start()
     {
-        // Initially hide Register and Login buttons
         RegisterButton.gameObject.SetActive(false);
         LoginButton.gameObject.SetActive(false);
 
-        // Audio
         BackgroundMusic = GameObject.Find("AudioManager/BackgroundMusic").GetComponent<AudioSource>();
 
-        // Add listeners to all the buttons
         PlayButton.onClick.AddListener(OnPlayButtonClicked);
         RegisterButton.onClick.AddListener(() => OnButtonClicked("RegisterScene"));
         LoginButton.onClick.AddListener(() => OnButtonClicked("LoginScene"));
@@ -32,10 +29,8 @@ public class StartGameManager : MonoBehaviour
     void OnPlayButtonClicked()
     {
         if (isTransitioning) return;
-        // Hide the Play button
         PlayButton.gameObject.SetActive(false);
 
-        // Show the Register and Login buttons
         RegisterButton.gameObject.SetActive(true);
         LoginButton.gameObject.SetActive(true);
     }

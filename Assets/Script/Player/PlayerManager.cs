@@ -1,9 +1,25 @@
 using UnityEngine;
 using Unity.Netcode;
+using System.Collections;
 
 public class PlayerManager : NetworkBehaviour
 {
+    public NetworkVariable<Color> PlayerColor = new NetworkVariable<Color>(Color.white);
+    private SpriteRenderer spriteRenderer;
     public bool isImmuneToCatch;
+
+    private void Start()
+    {
+        spriteRenderer = GetComponent<SpriteRenderer>();
+
+        PlayerColor.OnValueChanged += OnColorChanged;
+    }
+
+    private void OnDestroy()
+    {
+        PlayerColor.OnValueChanged -= OnColorChanged;
+    }
+
     public override void OnNetworkSpawn()
     {
         if (IsOwner)
@@ -82,5 +98,40 @@ public class PlayerManager : NetworkBehaviour
     private void SetImmunityClientRpc(bool enabled)
     {
         isImmuneToCatch = enabled;
+    }
+
+    // Set color changes for the worker role
+    private void OnColorChanged(Color oldColor, Color newColor)
+    {
+        if (spriteRenderer != null)
+        {
+            spriteRenderer.color = newColor;
+        }
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    public void SetPlayerColorServerRpc(Color color)
+    {
+        if (IsServer)
+        {
+            PlayerColor.Value = color;
+        }
+    }
+
+    public void ResetColorAfterDelay(float delay)
+    {
+        StartCoroutine(ResetColorCoroutine(delay));
+    }
+
+    private IEnumerator ResetColorCoroutine(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        RequestColorResetServerRpc();
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    public void RequestColorResetServerRpc()
+    {
+        PlayerColor.Value = Color.white;
     }
 }

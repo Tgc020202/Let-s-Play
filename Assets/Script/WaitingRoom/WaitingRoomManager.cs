@@ -4,6 +4,7 @@ using UnityEngine.UI;
 using Photon.Pun;
 using Photon.Realtime;
 using Hashtable = ExitGames.Client.Photon.Hashtable;
+using System.Collections;
 
 public class WaitingRoomManager : MonoBehaviourPunCallbacks
 {
@@ -15,6 +16,10 @@ public class WaitingRoomManager : MonoBehaviourPunCallbacks
     private Outline playButtonOutline;
     private Outline readyButtonOutline;
     private Outline leaveButtonOutline;
+    public Animator CarAnimator;
+    public GameObject RedTrafficLight;
+    public GameObject GreenTrafficLight;
+    private bool isTransitioning = false;
     private bool readyClicked = false;
     private void Start()
     {
@@ -44,6 +49,8 @@ public class WaitingRoomManager : MonoBehaviourPunCallbacks
         readyButton.onClick.AddListener(OnReadyButtonClicked);
         leaveButton.onClick.AddListener(OnLeaveButtonClicked);
 
+        GreenTrafficLight.SetActive(false);
+
         UpdatePlayButtonInteractable();
     }
 
@@ -62,18 +69,48 @@ public class WaitingRoomManager : MonoBehaviourPunCallbacks
 
         Hashtable playerProperties = new Hashtable { { "isReady", !isReady } };
         PhotonNetwork.LocalPlayer.SetCustomProperties(playerProperties);
+
+        if (readyClicked)
+        {
+            if (isTransitioning) return;
+            isTransitioning = true;
+            RedTrafficLight.SetActive(false);
+            GreenTrafficLight.SetActive(true);
+            CarAnimator.SetBool("isTurningToNextScene", true);
+        }
+        else
+        {
+            isTransitioning = false;
+            RedTrafficLight.SetActive(true);
+            GreenTrafficLight.SetActive(false);
+        }
+
     }
 
     public void OnPlayButtonClicked()
     {
         if (PhotonNetwork.IsMasterClient && PhotonNetwork.CurrentRoom.PlayerCount == RoomManager.Instance.numberOfPlayers && AreAllPlayersReady())
         {
-            readyButtonOutline.effectColor = Color.green;
+            playButtonOutline.effectColor = Color.green;
 
             int mapIndex = RoomManager.Instance.currentMapIndex;
             int modeIndex = RoomManager.Instance.currentModeIndex;
-            RoomManager.Instance.StartGame("Game-Map" + mapIndex + "-Mode" + modeIndex);
+
+            if (isTransitioning) return;
+            isTransitioning = true;
+            RedTrafficLight.SetActive(false);
+            GreenTrafficLight.SetActive(true);
+            CarAnimator.SetBool("isTurningToNextScene", true);
+
+            string roomName = "Game-Map" + mapIndex + "-Mode" + modeIndex;
+            StartCoroutine(DelayedSceneTransition(roomName));
         }
+    }
+
+    IEnumerator DelayedSceneTransition(string sceneName)
+    {
+        yield return new WaitForSeconds(2f);
+        RoomManager.Instance.StartGame(sceneName);
     }
 
     public override void OnMasterClientSwitched(Player newMasterClient)
@@ -119,6 +156,11 @@ public class WaitingRoomManager : MonoBehaviourPunCallbacks
 
     private bool AreAllPlayersReady()
     {
+        if (PhotonNetwork.CurrentRoom.Players.Count < RoomManager.Instance.numberOfPlayers)
+        {
+            return false;
+        }
+
         foreach (Player player in PhotonNetwork.CurrentRoom.Players.Values)
         {
             if (!player.CustomProperties.ContainsKey("isReady") || !(bool)player.CustomProperties["isReady"])

@@ -11,7 +11,9 @@ public class EndGameSceneBehaviour : MonoBehaviourPunCallbacks
     public Button winLoseButton;
     public Button returnButton;
     private AudioSource BackgroundMusic;
-
+    public Animator CarAnimator;
+    public GameObject RedTrafficLight;
+    public GameObject GreenTrafficLight;
     private bool isTransitioning = false;
 
     private int numberOfPlayers;
@@ -33,6 +35,7 @@ public class EndGameSceneBehaviour : MonoBehaviourPunCallbacks
         {
             Debug.LogError($"BackgroundMusic not found at AudioManager/BackgroundMusic. Ensure AudioManager is set up correctly.");
         }
+        GreenTrafficLight.SetActive(false);
 
         if (RoomManager.Instance != null)
         {
@@ -69,9 +72,6 @@ public class EndGameSceneBehaviour : MonoBehaviourPunCallbacks
             Debug.LogError("RoomManager.Instance is null! Please initialize it.");
         }
 
-        returnButton.onClick.AddListener(OnReturnButtonClick);
-        returnButton.interactable = false;
-
         // Ensure only the MasterClient recreates the room
         if (PhotonNetwork.IsMasterClient)
         {
@@ -85,32 +85,11 @@ public class EndGameSceneBehaviour : MonoBehaviourPunCallbacks
         }
     }
 
-    void OnReturnButtonClick()
-    {
-        if (isTransitioning) return;
-        isTransitioning = true;
-        StartCoroutine(EndGameAndRecreateRoom());
-    }
-
-    private IEnumerator EndGameAndRecreateRoom()
-    {
-        yield return new WaitForSeconds(2f);
-        BackgroundMusic.Stop();
-
-        OnReturnWaitingRoom();
-    }
-
     private IEnumerator OnRecreateRoomSetup()
     {
         yield return new WaitForSeconds(2f);
 
-        // Store variables
-        RoomManager.Instance.numberOfPlayers = numberOfPlayers;
-        RoomManager.Instance.maxNumberOfBosses = maxNumberOfBosses;
-        RoomManager.Instance.maxNumberOfWorkers = maxNumberOfWorkers;
-        RoomManager.Instance.currentMapIndex = currentMapIndex;
-        RoomManager.Instance.currentModeIndex = currentModeIndex;
-        RoomManager.Instance.roomName = roomName;
+        if (isTransitioning) yield break;
 
         RoomOptions options = new RoomOptions
         {
@@ -123,17 +102,45 @@ public class EndGameSceneBehaviour : MonoBehaviourPunCallbacks
         options.CustomRoomProperties = customProperties;
 
         PhotonNetwork.CreateRoom(roomName, options, null);
+        Debug.Log($"Creating room: {roomName}");
 
         yield return new WaitForSeconds(2f);
-        returnButton.interactable = true;
+        StartCoroutine(EndGameAndRecreateRoom());
     }
 
     private IEnumerator RejoinRoomAfterDelay()
     {
-        yield return new WaitForSeconds(10f);
+        yield return new WaitForSeconds(8f);
+
+        if (isTransitioning) yield break;
 
         PhotonNetwork.JoinRoom(roomName);
-        returnButton.interactable = true;
+    }
+
+    public override void OnJoinedRoom()
+    {
+        if (isTransitioning) return;
+        isTransitioning = true;
+        Debug.Log("Rejoined room successfully. Transitioning to waiting room.");
+        StartCoroutine(EndGameAndRecreateRoom());
+    }
+
+    public override void OnJoinRoomFailed(short returnCode, string message)
+    {
+        Debug.LogError($"Failed to join room: {message}. Retrying...");
+        StartCoroutine(RejoinRoomAfterDelay());
+    }
+
+    private IEnumerator EndGameAndRecreateRoom()
+    {
+        RedTrafficLight.SetActive(false);
+        GreenTrafficLight.SetActive(true);
+        CarAnimator.SetBool("isTurningToNextScene", true);
+
+        yield return new WaitForSeconds(2f);
+        BackgroundMusic.Stop();
+
+        OnReturnWaitingRoom();
     }
 
     private void OnReturnWaitingRoom()
@@ -145,4 +152,5 @@ public class EndGameSceneBehaviour : MonoBehaviourPunCallbacks
     {
         PhotonNetwork.LeaveRoom();
     }
+
 }

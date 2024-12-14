@@ -5,13 +5,13 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
-  - enabled: 0
+  - enabled: 1
     path: Assets/Scenes/StartGameScene.unity
     guid: 2cda990e2423bbf4892e6590ba056729
-  - enabled: 0
+  - enabled: 1
     path: Assets/Scenes/RegisterScene.unity
     guid: a1be70d32e1263745a995a3d57ef9ca4
-  - enabled: 0
+  - enabled: 1
     path: Assets/Scenes/LoginScene.unity
     guid: 311d92d541657cf4d80086200c6471bc
   - enabled: 1
@@ -26,7 +26,4 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/EndGameScene.unity
     guid: b102bfd2f7de5c943a3014a6396b0a51
-  - enabled: 0
-    path: Assets/Scenes/WaitingRoomSceneTest.unity
-    guid: 5429d90714b488b43bd8d14604f97e5f
   m_configObjects: {}

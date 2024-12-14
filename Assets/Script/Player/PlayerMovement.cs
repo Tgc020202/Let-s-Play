@@ -66,11 +66,11 @@ public class PlayerMovement : NetworkBehaviour
         Debug.Log("Speed become: " + speed);
     }
 
-    [ServerRpc]
+    [ServerRpc(RequireOwnership = false)]
     public void StopServerRpc(bool isStop)
     {
         isStopped = isStop;
-        
+
         if (isStop)
         {
             fixedPosition = rb.position;

@@ -702,8 +702,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 623960012}
-  - component: {fileID: 623960013}
-  - component: {fileID: 623960014}
   - component: {fileID: 623960015}
   m_Layer: 0
   m_Name: SceneManager
@@ -727,34 +725,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &623960013
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 623960011}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d33daad369068b44097120ef7f4bef18, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  editModeButton: {fileID: 0}
-  playButton: {fileID: 0}
-  CarAnimator: {fileID: 1020109192}
---- !u!114 &623960014
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 623960011}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 764993bb153d4084c8c12044b4c220a3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  roomCode: {fileID: 156012917}
 --- !u!114 &623960015
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -771,6 +741,9 @@ MonoBehaviour:
   readyButton: {fileID: 368305526}
   leaveButton: {fileID: 876373943}
   roomNameText: {fileID: 1678149168}
+  CarAnimator: {fileID: 864102669}
+  RedTrafficLight: {fileID: 1014579481}
+  GreenTrafficLight: {fileID: 838320141}
 --- !u!1 &624766970
 GameObject:
   m_ObjectHideFlags: 0
@@ -1061,6 +1034,11 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 2450267673516763045, guid: 15018b4d504faf244b7478a0528ac626, type: 3}
   m_PrefabInstance: {fileID: 838320139}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &838320141 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5344844099425783260, guid: 15018b4d504faf244b7478a0528ac626, type: 3}
+  m_PrefabInstance: {fileID: 838320139}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &864102667
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1130,6 +1108,11 @@ PrefabInstance:
 --- !u!4 &864102668 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 9149985520066067338, guid: 8e1ccdaf54b2ef643afd80c2ee52c7b7, type: 3}
+  m_PrefabInstance: {fileID: 864102667}
+  m_PrefabAsset: {fileID: 0}
+--- !u!95 &864102669 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 6214842874412281374, guid: 8e1ccdaf54b2ef643afd80c2ee52c7b7, type: 3}
   m_PrefabInstance: {fileID: 864102667}
   m_PrefabAsset: {fileID: 0}
 --- !u!1 &876373940
@@ -1418,10 +1401,10 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 2450267673516763045, guid: 15018b4d504faf244b7478a0528ac626, type: 3}
   m_PrefabInstance: {fileID: 1014579479}
   m_PrefabAsset: {fileID: 0}
---- !u!95 &1020109192 stripped
-Animator:
-  m_CorrespondingSourceObject: {fileID: 6214842874412281374, guid: 8e1ccdaf54b2ef643afd80c2ee52c7b7, type: 3}
-  m_PrefabInstance: {fileID: 864102667}
+--- !u!1 &1014579481 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5344844099425783260, guid: 15018b4d504faf244b7478a0528ac626, type: 3}
+  m_PrefabInstance: {fileID: 1014579479}
   m_PrefabAsset: {fileID: 0}
 --- !u!1 &1056877439
 GameObject:
@@ -2681,10 +2664,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0cd44c1031e13a943bb63640046fad76, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_UiScaleMode: 0
+  m_UiScaleMode: 1
   m_ReferencePixelsPerUnit: 100
   m_ScaleFactor: 1
-  m_ReferenceResolution: {x: 800, y: 600}
+  m_ReferenceResolution: {x: 1920, y: 1080}
   m_ScreenMatchMode: 0
   m_MatchWidthOrHeight: 0
   m_PhysicalUnit: 3

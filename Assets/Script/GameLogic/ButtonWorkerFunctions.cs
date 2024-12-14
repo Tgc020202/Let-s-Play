@@ -6,6 +6,7 @@ using Unity.Netcode;
 public class ButtonWorkerFunctions : MonoBehaviour
 {
     private NetworkObject playerNetworkObject;
+    private SpriteRenderer spriteRenderer;
     public PlayerMovement playerMovement;
     public CollisionTriggerDisplay collisionTriggerDisplay;
     public TaskManager taskManager;
@@ -66,6 +67,7 @@ public class ButtonWorkerFunctions : MonoBehaviour
             playerNetworkObject = NetworkManager.Singleton.LocalClient.PlayerObject.GetComponent<NetworkObject>();
             playerMovement = playerNetworkObject.GetComponent<PlayerMovement>();
             collisionTriggerDisplay = playerNetworkObject.GetComponent<CollisionTriggerDisplay>();
+            spriteRenderer = playerNetworkObject.GetComponent<SpriteRenderer>();
         }
         else
         {
@@ -97,6 +99,7 @@ public class ButtonWorkerFunctions : MonoBehaviour
     {
         if (playerNetworkObject != null && playerNetworkObject.IsOwner)
         {
+            ChangePlayerColor(Color.red);
             SetImmunityServerRpc(playerNetworkObject.NetworkObjectId, true);
             playerMovement.enabled = false;
 
@@ -108,21 +111,42 @@ public class ButtonWorkerFunctions : MonoBehaviour
         }
     }
 
-    // OnClick for the Green button (helping another player)
     void OnGreenButtonClicked()
     {
         targetPlayer = collisionTriggerDisplay.targetPlayer;
         canHelpPlayer = collisionTriggerDisplay.canHelpPlayer;
 
+
+        // Change color to green: test
+        ChangePlayerColor(Color.green);
+
         if (playerNetworkObject != null && playerNetworkObject.IsOwner && canHelpPlayer && targetPlayer != null)
         {
+            ChangePlayerColor(Color.green);
             HelpPlayerServerRpc(targetPlayer.GetComponent<NetworkObject>().NetworkObjectId);
+
             // Increase the worker count when a player is helped
             GameObject.FindObjectOfType<GameManager>()?.UpdateWorkerCountRequest(+1);
         }
     }
 
-    // Coroutine to handle the speed boost duration
+    void ChangePlayerColor(Color color)
+    {
+        if (playerNetworkObject != null && playerNetworkObject.IsOwner)
+        {
+            var playerManager = playerNetworkObject.GetComponent<PlayerManager>();
+            if (playerManager != null)
+            {
+                playerManager.SetPlayerColorServerRpc(color);
+                if (color == Color.green)
+                {
+                    playerManager.ResetColorAfterDelay(2f);
+                }
+            }
+        }
+    }
+
+
     IEnumerator SpeedBoost()
     {
         canUseRunButton = false;
@@ -141,7 +165,6 @@ public class ButtonWorkerFunctions : MonoBehaviour
         canUseRunButton = true;
     }
 
-    // Skips the guidance UI after a set time or button press
     void OnSkipGuidanceUI()
     {
         MapDesign.SetActive(true);
@@ -176,11 +199,13 @@ public class ButtonWorkerFunctions : MonoBehaviour
             {
                 targetPlayerManager.SetMovementEnabledServerRpc(true);
                 targetPlayerManager.SetImmunityServerRpc(false);
+                targetPlayerManager.SetPlayerColorServerRpc(Color.yellow);
+                targetPlayerManager.ResetColorAfterDelay(2f);
             }
         }
     }
 
-    // Test function to simulate completing a task (can be triggered manually)
+    // Testing
     void OnCompleteTaskClicked()
     {
         var playerNetworkObject = NetworkManager.Singleton.LocalClient?.PlayerObject.GetComponent<NetworkObject>();

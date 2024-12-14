@@ -18,10 +18,9 @@ public class ButtonBossFunctions : MonoBehaviour
     public GameObject GuidanceUI;
     private GameObject targetPlayer;
 
-    private float timer = 5f;
+    private float timer = 20f;
 
     private bool canUseRunButton = true;
-    private bool isImmuneToCatch = false;
     private bool canCatchPlayer = false;
 
 
