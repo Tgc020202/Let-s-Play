@@ -3,11 +3,14 @@ using Unity.Netcode;
 
 public class PlayerMovement : NetworkBehaviour
 {
-    public float speed = 5f; // Default speed
+    // UI Components
     private Rigidbody2D rb;
     private Vector2 moveInput;
     private Vector2 fixedPosition;
+
+    // Defines
     private bool isStopped = false;
+    public float speed = 5f;
 
     void Start()
     {

@@ -1,29 +1,34 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
-using System.Collections;
 using Unity.Netcode;
 
 public class ButtonWorkerFunctions : MonoBehaviour
 {
+    // UI Components
     private NetworkObject playerNetworkObject;
     private SpriteRenderer spriteRenderer;
-    public PlayerMovement playerMovement;
-    public CollisionTriggerDisplay collisionTriggerDisplay;
-    public TaskManager taskManager;
     public Button runButton;
     public Button redButton;
     public Button greenButton;
     public Button completeTaskButton;   // test
+    private Text runButtonText;
+
+    // Scripts
+    public PlayerMovement playerMovement;
+    public TaskManager taskManager;
+    private CollisionTriggerDisplay collisionTriggerDisplay;
+
+    // GameObjects
     public GameObject GameViewUI;
     public GameObject MapDesign;
     public GameObject GuidanceUI;
-
-    private bool canUseRunButton = true;
-    private Text runButtonText;
-    private float timer = 5f;
-
-    private bool canHelpPlayer = false;
     private GameObject targetPlayer;
+
+    // Defines
+    private bool canUseRunButton = true;
+    private bool canHelpPlayer = false;
+    private float timer = 5f;
 
     void Start()
     {
@@ -75,7 +80,6 @@ public class ButtonWorkerFunctions : MonoBehaviour
         }
     }
 
-    // OnClick for the Run button
     void OnRunButtonClicked()
     {
         if (playerNetworkObject != null && playerNetworkObject.IsOwner && canUseRunButton)
@@ -94,7 +98,6 @@ public class ButtonWorkerFunctions : MonoBehaviour
         }
     }
 
-    // OnClick for the Red button
     void OnRedButtonClicked()
     {
         if (playerNetworkObject != null && playerNetworkObject.IsOwner)
@@ -103,7 +106,6 @@ public class ButtonWorkerFunctions : MonoBehaviour
             SetImmunityServerRpc(playerNetworkObject.NetworkObjectId, true);
             playerMovement.enabled = false;
 
-            // Decrease the worker count when a player is caught
             GameObject.FindObjectOfType<GameManager>()?.UpdateWorkerCountRequest(-1);
 
             // Task 1: Red Button Press
@@ -116,8 +118,6 @@ public class ButtonWorkerFunctions : MonoBehaviour
         targetPlayer = collisionTriggerDisplay.targetPlayer;
         canHelpPlayer = collisionTriggerDisplay.canHelpPlayer;
 
-
-        // Change color to green: test
         ChangePlayerColor(Color.green);
 
         if (playerNetworkObject != null && playerNetworkObject.IsOwner && canHelpPlayer && targetPlayer != null)
@@ -125,7 +125,6 @@ public class ButtonWorkerFunctions : MonoBehaviour
             ChangePlayerColor(Color.green);
             HelpPlayerServerRpc(targetPlayer.GetComponent<NetworkObject>().NetworkObjectId);
 
-            // Increase the worker count when a player is helped
             GameObject.FindObjectOfType<GameManager>()?.UpdateWorkerCountRequest(+1);
         }
     }
@@ -150,7 +149,7 @@ public class ButtonWorkerFunctions : MonoBehaviour
     IEnumerator SpeedBoost()
     {
         canUseRunButton = false;
-        playerMovement.IncreaseSpeedServerRpc(true);  // Server call to increase speed
+        playerMovement.IncreaseSpeedServerRpc(true);
 
         for (int i = 20; i > 0; i--)
         {
@@ -158,7 +157,7 @@ public class ButtonWorkerFunctions : MonoBehaviour
             yield return new WaitForSeconds(1);
             if (i == 16)
             {
-                playerMovement.IncreaseSpeedServerRpc(false);  // Disable speed after 16 seconds
+                playerMovement.IncreaseSpeedServerRpc(false);
             }
         }
         runButtonText.text = "Run";

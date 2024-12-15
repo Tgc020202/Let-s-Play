@@ -6,16 +6,17 @@ using Firebase.Database;
 
 public class DatabaseManager : MonoBehaviour
 {
+    // Scripts
     private DatabaseReference dbReference;
-
+    
     void Start()
     {
         dbReference = FirebaseDatabase.DefaultInstance.RootReference;
     }
 
-    public void CreateUser(string username, string password)
+    public void CreateUser(string username, string password, bool status)
     {
-        User newUser = new User(username, password);
+        User newUser = new User(username, password, status);
         string json = JsonUtility.ToJson(newUser);
         dbReference.Child("users").Child(username).SetRawJsonValueAsync(json);
     }
@@ -31,7 +32,9 @@ public class DatabaseManager : MonoBehaviour
             DataSnapshot snapshot = userData.Result;
             string dbUsername = snapshot.Child("username").Value.ToString();
             string dbPassword = snapshot.Child("password").Value.ToString();
-            User user = new User(dbUsername, dbPassword);
+            bool dbStatus = Convert.ToBoolean(snapshot.Child("status").Value);
+
+            User user = new User(dbUsername, dbPassword, dbStatus);
             callback(user);
         }
         else
@@ -54,5 +57,21 @@ public class DatabaseManager : MonoBehaviour
         {
             callback(false);
         }
+    }
+
+    public void UpdateUserStatus(string username, bool status)
+    {
+        dbReference.Child("users").Child(username).Child("status").SetValueAsync(status)
+            .ContinueWith(task =>
+            {
+                if (task.IsCompletedSuccessfully)
+                {
+                    Debug.Log($"Successfully updated status for {username} to {status}");
+                }
+                else
+                {
+                    Debug.LogError($"Failed to update status for {username}: {task.Exception}");
+                }
+            });
     }
 }

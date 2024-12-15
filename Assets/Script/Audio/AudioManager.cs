@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class AudioManager : MonoBehaviour
 {
+    // UI Components
     private AudioSource audioSource;
 
     private void Start()

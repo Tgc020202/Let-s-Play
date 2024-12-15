@@ -3,31 +3,31 @@ using UnityEngine.UI;
 
 public class MapSelection : MonoBehaviour
 {
+    // UI Components
     public Button previousButton;
     public Button nextButton;
     public Button mapButton;
     public Button backButon;
     public Text mapText;
 
-    // Panels
+    // GameObjects
     public GameObject TotalNumberUI;
     public GameObject MapUI;
     public GameObject ModeUI;
     public GameObject PlayerSetupUI;
     public GameObject RoomSetupUI;
 
+    // Defines
     public int currentMapIndex = 1;
     private const int maxMaps = 4;
 
     void Start()
     {
-        // Assign listeners for map selection
         nextButton.onClick.AddListener(OnNextClicked);
         previousButton.onClick.AddListener(OnPreviousClicked);
         mapButton.onClick.AddListener(OnMapButtonClicked);
         backButon.onClick.AddListener(OnBackButonClicked);
 
-        // Initialize the map name and button states
         UpdateMapText();
         previousButton.interactable = false;
 

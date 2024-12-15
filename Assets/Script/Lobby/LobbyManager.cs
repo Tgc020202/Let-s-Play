@@ -1,15 +1,17 @@
-using Photon.Pun;
-using Photon.Realtime;
-using UnityEngine;
-using UnityEngine.UI;
-using Hashtable = ExitGames.Client.Photon.Hashtable;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using Photon.Pun;
+using Photon.Realtime;
+using Hashtable = ExitGames.Client.Photon.Hashtable;
 
 public class LobbyManager : MonoBehaviourPunCallbacks
 {
+    // UI Components
     public InputField roomNameInput;
+    public InputField roomCodeInput;
     public Text roomNameErrorText;
     public Button createRoomButton;
     public Button joinRoomButton;
@@ -18,15 +20,20 @@ public class LobbyManager : MonoBehaviourPunCallbacks
     public Button modeButton;
     public Button backButton1;
     public Button backButton2;
-    public InputField roomCodeInput;
+    public Transform roomListContent;
+
+    // Scripts
     public NumberOfPlayerSelection numberOfPlayerSelection;
     public MapSelection mapSelection;
     public ModeSelection modeSelection;
-    public Transform roomListContent;
-    public GameObject roomItemPrefab;
-    private List<RoomInfo> cachedRoomList = new List<RoomInfo>();
 
-    // Panels
+    // Audio
+    private AudioSource BackgroundMusic;
+
+    // Animations
+    public Animator CarAnimator;
+
+    // GameObjects
     public GameObject RoomSelectionUI;
     public GameObject PlayerSetupUI;
     public GameObject RoomSetupUI;
@@ -34,33 +41,27 @@ public class LobbyManager : MonoBehaviourPunCallbacks
     public GameObject MapUI;
     public GameObject TotalNumberUI;
     public GameObject ModeUI;
-
-    // Audio
-    private AudioSource BackgroundMusic;
-    private Dictionary<string, GameObject> uiDictionary;
-    public Animator CarAnimator;
+    public GameObject roomItemPrefab;
     public GameObject RedTrafficLight;
     public GameObject GreenTrafficLight;
+
+    // Defines
+    private Dictionary<string, GameObject> uiDictionary;
     private bool isTransitioning = false;
     private bool isPrivate = false;
     private bool isConnectedToMaster = false;
+    private List<RoomInfo> cachedRoomList = new List<RoomInfo>();
+
+    // Messages
+    private const string RoomNameInvalidMessage = "Room name already exists. Please choose a different name.";
+    private const string UsernameEmptyMessage = "Please enter Room Name.";
+    private const string EmptyMessage = "";
 
     private void Start()
     {
+        GreenTrafficLight.SetActive(false);
         RoomManager.Instance.ConnectToPhoton();
 
-        // Audio
-        GameObject bgmObject = GameObject.Find("AudioManager/BackgroundMusic");
-        if (bgmObject != null)
-        {
-            BackgroundMusic = bgmObject.GetComponent<AudioSource>();
-        }
-        else
-        {
-            Debug.LogWarning("AudioManager/BackgroundMusic not found.");
-        }
-
-        // UI
         uiDictionary = new Dictionary<string, GameObject>
     {
         { "RoomSelectionUI", RoomSelectionUI },
@@ -83,20 +84,26 @@ public class LobbyManager : MonoBehaviourPunCallbacks
             OnUpdateNetworkRoleToHost(false);
             ToggleUIActive("JoinRoomUI", true);
         });
-
         publicButton.onClick.AddListener(() => OnSetPrivateClicked(false));
         privateButton.onClick.AddListener(() => OnSetPrivateClicked(true));
         modeButton.onClick.AddListener(OnCreateRoomButtonClicked);
         backButton1.onClick.AddListener(OnBackButtonClicked);
         backButton2.onClick.AddListener(OnBackButtonClicked);
-
         roomCodeInput.onEndEdit.AddListener(OnRoomCodeInputEndEdit);
 
         ToggleUIActive("RoomSelectionUI", true);
-        GreenTrafficLight.SetActive(false);
+
+        GameObject bgmObject = GameObject.Find("AudioManager/BackgroundMusic");
+        if (bgmObject != null)
+        {
+            BackgroundMusic = bgmObject.GetComponent<AudioSource>();
+        }
+        else
+        {
+            Debug.LogWarning("AudioManager/BackgroundMusic not found.");
+        }
     }
 
-    // UI Handler
     public void ToggleUIActive(string UIName, bool isActive)
     {
         foreach (var ui in uiDictionary)
@@ -105,8 +112,6 @@ public class LobbyManager : MonoBehaviourPunCallbacks
         }
 
         bool anySubUIActive = MapUI.activeSelf || TotalNumberUI.activeSelf || ModeUI.activeSelf;
-
-        // If any of these UIs are active, set RoomSetupUI to active as well
         RoomSetupUI.SetActive(anySubUIActive);
     }
 
@@ -117,7 +122,6 @@ public class LobbyManager : MonoBehaviourPunCallbacks
 
     public void OnBackButtonClicked()
     {
-        Debug.Log("Clicked");
         ToggleUIActive("RoomSelectionUI", true);
     }
 
@@ -129,18 +133,18 @@ public class LobbyManager : MonoBehaviourPunCallbacks
         {
             if (IsRoomNameAvailable(roomName))
             {
-                roomNameErrorText.text = "";
+                roomNameErrorText.text = EmptyMessage;
                 this.isPrivate = isPrivate;
                 ToggleUIActive("MapUI", true);
             }
             else
             {
-                roomNameErrorText.text = "Room name already exists. Please choose a different name.";
+                roomNameErrorText.text = RoomNameInvalidMessage;
             }
         }
         else
         {
-            roomNameInput.placeholder.GetComponent<Text>().text = "Please enter Room Name!";
+            roomNameInput.placeholder.GetComponent<Text>().text = UsernameEmptyMessage;
         }
     }
 
@@ -159,7 +163,6 @@ public class LobbyManager : MonoBehaviourPunCallbacks
 
     public override void OnConnectedToMaster()
     {
-        Debug.Log("Connected to Master Server.");
         isConnectedToMaster = true;
         PhotonNetwork.JoinLobby();
     }
@@ -171,16 +174,13 @@ public class LobbyManager : MonoBehaviourPunCallbacks
 
     public void OnCreateRoomButtonClicked()
     {
-        string roomName = roomNameInput.text;
-        string roomCode = roomName;
-
         // Store variables
         RoomManager.Instance.numberOfPlayers = numberOfPlayerSelection.totalNumberOfPlayer;
         RoomManager.Instance.maxNumberOfBosses = numberOfPlayerSelection.bossCount;
         RoomManager.Instance.maxNumberOfWorkers = numberOfPlayerSelection.staffCount;
         RoomManager.Instance.currentMapIndex = mapSelection.currentMapIndex;
         RoomManager.Instance.currentModeIndex = modeSelection.currentModeIndex;
-        RoomManager.Instance.roomName = roomName;
+        RoomManager.Instance.roomName = roomNameInput.text;
 
         RoomOptions options = new RoomOptions
         {
@@ -189,31 +189,19 @@ public class LobbyManager : MonoBehaviourPunCallbacks
             IsOpen = true
         };
 
-        Hashtable customProperties = new Hashtable { { "roomCode", roomCode } };
-
-        if (isTransitioning) return;
-        isTransitioning = true;
-        RedTrafficLight.SetActive(false);
-        GreenTrafficLight.SetActive(true);
-        CarAnimator.SetBool("isTurningToNextScene", true);
-
-        PhotonNetwork.CreateRoom(roomName, options, null);
+        Hashtable customProperties = new Hashtable { { "roomCode", roomNameInput.text } };
+        PhotonNetwork.CreateRoom(roomNameInput.text, options, null);
     }
 
     public override void OnCreatedRoom()
     {
-        // Start a coroutine to delay the scene transition
-        StartCoroutine(DelayedSceneTransition("WaitingRoomScene"));
+        if (isTransitioning) return;
+        isTransitioning = true;
 
-        string roomCode = roomNameInput.text;
-        Hashtable customProperties = new Hashtable { { "roomCode", roomCode } };
+        LoadAnimation("WaitingRoomScene");
+
+        Hashtable customProperties = new Hashtable { { "roomCode", roomNameInput.text } };
         PhotonNetwork.CurrentRoom.SetCustomProperties(customProperties);
-    }
-
-    IEnumerator DelayedSceneTransition(string sceneName)
-    {
-        yield return new WaitForSeconds(2f);
-        SceneManager.LoadScene(sceneName);
     }
 
     private void OnRoomCodeInputEndEdit(string input)
@@ -239,12 +227,9 @@ public class LobbyManager : MonoBehaviourPunCallbacks
 
         if (isTransitioning) return;
         isTransitioning = true;
-        RedTrafficLight.SetActive(false);
-        GreenTrafficLight.SetActive(true);
-        CarAnimator.SetBool("isTurningToNextScene", true);
 
         PhotonNetwork.JoinRoom(roomName);
-        StartCoroutine(DelayedSceneTransition("WaitingRoomScene"));
+        LoadAnimation("WaitingRoomScene");
     }
 
     public override void OnRoomListUpdate(List<RoomInfo> roomList)
@@ -303,7 +288,6 @@ public class LobbyManager : MonoBehaviourPunCallbacks
 
                 Button joinButton = roomItem.GetComponent<Button>();
 
-                // Check if the room is full
                 if (room.PlayerCount >= room.MaxPlayers)
                 {
                     joinButton.interactable = false;
@@ -313,19 +297,14 @@ public class LobbyManager : MonoBehaviourPunCallbacks
                 {
                     joinButton.onClick.AddListener(() =>
                     {
-                        string roomName = room.Name;
-
                         // Store variables
                         RoomManager.Instance.roomName = room.Name;
 
                         if (isTransitioning) return;
                         isTransitioning = true;
-                        RedTrafficLight.SetActive(false);
-                        GreenTrafficLight.SetActive(true);
-                        CarAnimator.SetBool("isTurningToNextScene", true);
 
                         PhotonNetwork.JoinRoom(room.Name);
-                        StartCoroutine(DelayedSceneTransition("WaitingRoomScene"));
+                        LoadAnimation("WaitingRoomScene");
                     });
                 }
             }
@@ -338,5 +317,21 @@ public class LobbyManager : MonoBehaviourPunCallbacks
         {
             Debug.Log("RoomCode: " + PhotonNetwork.CurrentRoom.CustomProperties["roomCode"].ToString());
         }
+    }
+
+    void LoadAnimation(string sceneName)
+    {
+        RedTrafficLight.SetActive(false);
+        GreenTrafficLight.SetActive(true);
+        CarAnimator.SetBool("isTurningToNextScene", true);
+
+        StartCoroutine(DelayedSceneTransition(sceneName));
+    }
+
+    IEnumerator DelayedSceneTransition(string sceneName)
+    {
+        yield return new WaitForSeconds(2f);
+        SceneManager.LoadScene(sceneName);
+        BackgroundMusic.Stop();
     }
 }

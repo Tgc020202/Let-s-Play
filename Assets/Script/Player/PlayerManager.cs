@@ -4,9 +4,14 @@ using System.Collections;
 
 public class PlayerManager : NetworkBehaviour
 {
-    public NetworkVariable<Color> PlayerColor = new NetworkVariable<Color>(Color.white);
+    // UI Components
     private SpriteRenderer spriteRenderer;
+
+    // Defines
     public bool isImmuneToCatch;
+
+    // Network Variables
+    public NetworkVariable<Color> PlayerColor = new NetworkVariable<Color>(Color.white);
 
     private void Start()
     {

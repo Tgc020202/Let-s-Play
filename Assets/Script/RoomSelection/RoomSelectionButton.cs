@@ -1,40 +1,53 @@
-using UnityEngine;
-using UnityEngine.UI;
-using UnityEngine.SceneManagement;
-using System.Collections;
-public class RoomSelectionButton : MonoBehaviour
+// using UnityEngine;
+// using UnityEngine.UI;
+// using UnityEngine.SceneManagement;
+// using System.Collections;
+// public class RoomSelectionButton : MonoBehaviour
 
-{
-    public Button createRoomButton;
-    public Button joinRoomButton;
-    public Animator CarAnimator;
-    public GameObject RedTrafficLight;
-    public GameObject GreenTrafficLight;
-    private bool isTransitioning = false;
+// {
+//     // UI Components
+//     public Button createRoomButton;
+//     public Button joinRoomButton;
 
-    void Start()
-    {
-        GreenTrafficLight.SetActive(false);
-        createRoomButton.onClick.AddListener(() => OnButtonClicked("RoomSetup"));
-        joinRoomButton.onClick.AddListener(() => OnButtonClicked("LobbySelectionScene"));
-    }
+//     // Animations
+//     public Animator CarAnimator;
 
-    void OnButtonClicked(string sceneName)
-    {
-        if (isTransitioning) return;
-        isTransitioning = true;
-        CarAnimator.SetBool("isTurningToNextScene", true);
+//     // GameObjects
+//     public GameObject RedTrafficLight;
+//     public GameObject GreenTrafficLight;
 
-        // Start a coroutine to delay the scene transition
-        StartCoroutine(DelayedSceneTransition(sceneName));
-    }
+//     // Defines
+//     private bool isTransitioning = false;
 
-    IEnumerator DelayedSceneTransition(string sceneName)
-    {
-        // Wait for 2 seconds
-        yield return new WaitForSeconds(2f);
+//     void Start()
+//     {
+//         GreenTrafficLight.SetActive(false);
 
-        // Move to the specified scene
-        SceneManager.LoadScene(sceneName);
-    }
-}
+//         createRoomButton.onClick.AddListener(() => OnButtonClicked("RoomSetup"));
+//         joinRoomButton.onClick.AddListener(() => OnButtonClicked("LobbySelectionScene"));
+//     }
+
+//     void OnButtonClicked(string sceneName)
+//     {
+//         if (isTransitioning) return;
+//         isTransitioning = true;
+
+//         LoadAnimation(sceneName);
+//     }
+
+//     void LoadAnimation(string sceneName)
+//     {
+//         RedTrafficLight.SetActive(false);
+//         GreenTrafficLight.SetActive(true);
+//         CarAnimator.SetBool("isTurningToNextScene", true);
+
+//         StartCoroutine(DelayedSceneTransition(sceneName));
+//     }
+
+//     IEnumerator DelayedSceneTransition(string sceneName)
+//     {
+//         yield return new WaitForSeconds(2f);
+//         SceneManager.LoadScene(sceneName);
+//         BackgroundMusic.Stop();
+//     }
+// }

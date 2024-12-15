@@ -1,17 +1,22 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
-using System.Collections;
 
 public class StartGameManager : MonoBehaviour
 {
+    // UI Components
     public Button PlayButton;
     public Button RegisterButton;
     public Button LoginButton;
 
     // Audio
     private AudioSource BackgroundMusic;
+
+    // Animations
     public Animator CarAnimator;
+
+    // Defines
     private bool isTransitioning = false;
 
     void Start()
@@ -19,18 +24,18 @@ public class StartGameManager : MonoBehaviour
         RegisterButton.gameObject.SetActive(false);
         LoginButton.gameObject.SetActive(false);
 
-        BackgroundMusic = GameObject.Find("AudioManager/BackgroundMusic").GetComponent<AudioSource>();
-
         PlayButton.onClick.AddListener(OnPlayButtonClicked);
         RegisterButton.onClick.AddListener(() => OnButtonClicked("RegisterScene"));
         LoginButton.onClick.AddListener(() => OnButtonClicked("LoginScene"));
+
+        BackgroundMusic = GameObject.Find("AudioManager/BackgroundMusic").GetComponent<AudioSource>();
     }
 
     void OnPlayButtonClicked()
     {
         if (isTransitioning) return;
-        PlayButton.gameObject.SetActive(false);
 
+        PlayButton.gameObject.SetActive(false);
         RegisterButton.gameObject.SetActive(true);
         LoginButton.gameObject.SetActive(true);
     }
@@ -39,9 +44,16 @@ public class StartGameManager : MonoBehaviour
     {
         if (isTransitioning) return;
         isTransitioning = true;
+
+        LoadAnimation(sceneName);
+    }
+
+    void LoadAnimation(string sceneName)
+    {
+        // RedTrafficLight.SetActive(false);
+        // GreenTrafficLight.SetActive(true);
         CarAnimator.SetBool("isTurningToNextScene", true);
 
-        // Start a coroutine to delay the scene transition
         StartCoroutine(DelayedSceneTransition(sceneName));
     }
 
@@ -49,8 +61,6 @@ public class StartGameManager : MonoBehaviour
     {
         yield return new WaitForSeconds(2f);
         SceneManager.LoadScene(sceneName);
-
-        // Stop the background music
         BackgroundMusic.Stop();
     }
 }

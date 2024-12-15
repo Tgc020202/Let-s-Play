@@ -1,11 +1,12 @@
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
-using System.Collections;
-using System.Collections.Generic;
 
 public class RegisterManager : MonoBehaviour
 {
+    // UI Components
     public InputField usernameInputField;
     public InputField passwordInputField;
     public Text usernameInvalidMessage;
@@ -15,98 +16,99 @@ public class RegisterManager : MonoBehaviour
 
     // Audio
     private AudioSource BackgroundMusic;
+
+    // Animations
     public Animator CarAnimator;
+
+    // GameObjects
     public GameObject RedTrafficLight;
     public GameObject GreenTrafficLight;
 
+    // Defines
     private bool isTransitioning = false;
-    private bool isUsernameExists = false;
+    private bool isUsernameExistsInDB = false;
+    private string username;
+    private string password;
+
+    // Messages
+    private const string UsernameInvalidMessage = "Username already exists. Please choose a different username.";
+    private const string PasswordInvalidMessage = "Password must contain digits, letters and more than 5 characters.";
+    private const string UsernameEmptyMessage = "Username cannot be empty.";
+    private const string PasswordEmptyMessage = "Password cannot be empty.";
+    private const string EmptyMessage = "";
 
     void Start()
     {
         GreenTrafficLight.SetActive(false);
-        usernameInvalidMessage.text = "";
-        passwordInvalidMessage.text = "";
+        usernameInvalidMessage.text = EmptyMessage;
+        passwordInvalidMessage.text = EmptyMessage;
+
         submitButton.onClick.AddListener(OnSubmitButtonClick);
 
-        // Audio
         BackgroundMusic = GameObject.Find("AudioManager/BackgroundMusic").GetComponent<AudioSource>();
     }
 
     void Update()
     {
-        string username = usernameInputField.text;
-        string password = passwordInputField.text;
+        username = usernameInputField.text;
+        password = passwordInputField.text;
 
+        // Username detects
         if (string.IsNullOrEmpty(username))
         {
-            usernameInvalidMessage.text = "Username cannot be empty!!!";
-            isUsernameExists = false;
+            usernameInvalidMessage.text = UsernameEmptyMessage;
         }
-        else if (isUsernameExists)
+        else if (isUsernameExistsInDB)
         {
-            usernameInvalidMessage.text = "Username already exists. Please choose a different username.";
+            usernameInvalidMessage.text = UsernameInvalidMessage;
         }
         else
         {
-            usernameInvalidMessage.text = "";
+            usernameInvalidMessage.text = EmptyMessage;
         }
 
+        // Password detects
         if (string.IsNullOrEmpty(password))
         {
-            passwordInvalidMessage.text = "Password cannot be empty!!!";
+            passwordInvalidMessage.text = PasswordEmptyMessage;
         }
         else if (!IsValidPassword(password))
         {
-            passwordInvalidMessage.text = "Password must contain digits and letters, and more than 5 characters";
+            passwordInvalidMessage.text = PasswordInvalidMessage;
         }
         else
         {
-            passwordInvalidMessage.text = "";
+            passwordInvalidMessage.text = EmptyMessage;
         }
     }
 
     void OnSubmitButtonClick()
     {
-        string username = usernameInputField.text;
-        string password = passwordInputField.text;
+        username = usernameInputField.text;
+        password = passwordInputField.text;
 
         if (!string.IsNullOrEmpty(username) && IsValidPassword(password))
         {
-            if (isTransitioning) return;
-            isTransitioning = true;
-
             StartCoroutine(dbManager.CheckUsernameExists(username, usernameExists =>
             {
                 if (!usernameExists)
                 {
-                    isUsernameExists = false;
-                    usernameInvalidMessage.text = "";
-                    dbManager.CreateUser(username, password);
+                    isUsernameExistsInDB = false;
+                    usernameInvalidMessage.text = EmptyMessage;
 
-                    RedTrafficLight.SetActive(false);
-                    GreenTrafficLight.SetActive(true);
+                    // Initialize status to false
+                    dbManager.CreateUser(username, password, false);
 
-                    CarAnimator.SetBool("isTurningToNextScene", true);
+                    if (isTransitioning) return;
+                    isTransitioning = true;
 
-                    Debug.Log("Register Successfully!");
-                    StartCoroutine(DelayedSceneTransition("LoginScene"));
-
-                    // Stop the background music
-                    BackgroundMusic.Stop();
-
+                    LoadAnimation("LoginScene");
                 }
                 else
                 {
-                    isTransitioning = false;
-                    isUsernameExists = true;
-                    Debug.Log("Username already exists. Please choose a different username.");
+                    isUsernameExistsInDB = true;
                 }
             }));
-        }
-        else
-        {
-            Debug.Log("Register Failed! Invalid username or password.");
         }
     }
 
@@ -128,9 +130,19 @@ public class RegisterManager : MonoBehaviour
         return false;
     }
 
+    void LoadAnimation(string sceneName)
+    {
+        RedTrafficLight.SetActive(false);
+        GreenTrafficLight.SetActive(true);
+        CarAnimator.SetBool("isTurningToNextScene", true);
+
+        StartCoroutine(DelayedSceneTransition(sceneName));
+    }
+
     IEnumerator DelayedSceneTransition(string sceneName)
     {
         yield return new WaitForSeconds(2f);
         SceneManager.LoadScene(sceneName);
+        BackgroundMusic.Stop();
     }
 }

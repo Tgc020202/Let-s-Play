@@ -5,29 +5,29 @@ using System.Collections;
 
 public class ModeSelection : MonoBehaviour
 {
+    // UI Components
     public Button previousButton;
     public Button nextButton;
     public Button modeButton;
     public Button backButon;
     public Text modeText;
 
-    // Panels
+    // GameObjects
     public GameObject TotalNumberUI;
     public GameObject MapUI;
     public GameObject ModeUI;
 
+    // Defines
     public int currentModeIndex = 1;
     private const int maxModes = 3;
 
     void Start()
     {
-        // Assign listeners for map selection
         nextButton.onClick.AddListener(OnNextClicked);
         previousButton.onClick.AddListener(OnPreviousClicked);
         modeButton.onClick.AddListener(OnModeButtonClicked);
         backButon.onClick.AddListener(OnBackButtonClicked);
 
-        // Initialize the map name and button states
         UpdateModeText();
         previousButton.interactable = false;
     }

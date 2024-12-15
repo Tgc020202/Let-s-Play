@@ -1,12 +1,9 @@
-using Photon.Pun;
 using UnityEngine;
+using Photon.Pun;
 
 public class RoomManager : MonoBehaviour
 {
-    public static RoomManager Instance;
-    public bool gameStarted = false;
-
-    // Add variables to store
+    // Defines
     public int numberOfPlayers;
     public int maxNumberOfBosses;
     public int maxNumberOfWorkers;
@@ -14,6 +11,10 @@ public class RoomManager : MonoBehaviour
     public int currentModeIndex;
     public string roomName;
     public bool isBossWin;
+    public bool gameStarted = false;
+
+    // Instance
+    public static RoomManager Instance;
 
     private void Awake()
     {

@@ -2,9 +2,12 @@ using UnityEngine;
 
 public class CameraBehaviour : MonoBehaviour
 {
-    public Transform target;
-    public float smoothSpeed = 0.125f;
+    // UI Components
     public Vector3 offset;
+    public Transform target;
+
+    // Defines
+    public float smoothSpeed = 0.125f;
 
     void LateUpdate()
     {

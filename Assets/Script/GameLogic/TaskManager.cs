@@ -5,29 +5,36 @@ using Unity.Netcode;
 
 public class TaskManager : NetworkBehaviour
 {
+    // UI Components
+    public Text taskText;
+
+    // Scripts
+    public GameViewTextBehaviour gameViewTextBehaviour;
+    public GameManager gameManager;
+
+    // Defines
     public List<string> tasks = new List<string>
     {
         "Task 1: Use Red Button 5 times.",
         "Task 2: Use Run Button 3 times.",
         "Task 3: Close to Boss 1 time."
     };
+    private bool isTaskClosed = false;
 
-    public Text taskText;
-    public GameViewTextBehaviour gameViewTextBehaviour;
-    public GameManager gameManager;
-
+    // Network Variables
     private NetworkVariable<int> currentTaskIndex = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
     private NetworkVariable<int> taskIndicator1 = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
     private NetworkVariable<int> taskIndicator2 = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
     private NetworkVariable<bool> taskIndicator3 = new NetworkVariable<bool>(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
-    private bool isTaskClosed = false;
+    // Messages
+    private const string EmptyMessage = "";
 
     private void Start()
     {
         if (IsServer)
         {
-            GenerateNewTask(); // Initialize the first task
+            GenerateNewTask();
         }
 
         currentTaskIndex.OnValueChanged += UpdateTaskText;
@@ -106,11 +113,9 @@ public class TaskManager : NetworkBehaviour
 
         foreach (ulong bossClientId in bossClientIds)
         {
-            Debug.Log("Boss Id: " + bossClientId);
-
             if (!NetworkManager.Singleton.ConnectedClients.ContainsKey(bossClientId))
             {
-                Debug.Log("Boss ID not found in connected clients.");
+                Debug.LogWarning("Boss ID not found in connected clients.");
                 continue;
             }
 
@@ -129,7 +134,6 @@ public class TaskManager : NetworkBehaviour
 
                         if (distance < 3.0f)
                         {
-                            Debug.Log("Player is close enough to the boss!");
                             taskIndicator3.Value = true;
                             break;
                         }
@@ -150,8 +154,6 @@ public class TaskManager : NetworkBehaviour
             }
             return new List<ulong>(gameManager.listBossAssigned);
         }
-
-        Debug.Log("No Boss Assigned");
         return new List<ulong>();
     }
 
@@ -227,8 +229,7 @@ public class TaskManager : NetworkBehaviour
     {
         isTaskClosed = true;
 
-        // Clear the task text
-        taskText.text = "";
+        taskText.text = EmptyMessage;
         taskText.gameObject.SetActive(false);
     }
 

@@ -1,20 +1,30 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 using Unity.Netcode;
-using System.Collections;
 
 public class BossBehaviour : MonoBehaviour
 {
+    // UI Components
     private NetworkObject playerNetworkObject;
-    public PlayerMovement playerMovement;
-    public GameObject CountDownUI;
-    public GameObject BossControllerUI;
     public Text message;
     public Text countdownText;
+
+    // Scripts
+    public PlayerMovement playerMovement;
     public GameViewTextBehaviour gameViewTextBehaviour;
 
+    // GameObjects
+    public GameObject CountDownUI;
+    public GameObject BossControllerUI;
+
+    // Defines
     private bool controlsEnabled = false;
     private bool isBoss = false;
+
+    // Messages
+    private const string EndCountDownMessage = "Let's go to catch all workers!";
+    private const string EmptyMessage = "";
 
     void Start()
     {
@@ -92,13 +102,13 @@ public class BossBehaviour : MonoBehaviour
             }
             else
             {
-                countdownText.text = "Let's go to catch all workers!";
-                message.text = "";
+                countdownText.text = EndCountDownMessage;
+                message.text = EmptyMessage;
             }
         }
         else
         {
-            countdownText.text = "";
+            countdownText.text = EmptyMessage;
         }
     }
 

@@ -2,8 +2,10 @@ using UnityEngine;
 
 public class SoundManager : MonoBehaviour
 {
-    public static SoundManager Instance { get; private set; }
+    // UI Components
+    private AudioSource audioSource;
 
+    // Audio
     public AudioClip buttonClickedSoundEffect;
     public AudioClip catchSoundEffect;
     public AudioClip caughtSoundEffect;
@@ -13,14 +15,15 @@ public class SoundManager : MonoBehaviour
     public AudioClip missionSucceedSoundEffect;
     public AudioClip missionUnsucceedSoundEffect;
 
-    private AudioSource audioSource;
+    // Instance
+    public static SoundManager Instance { get; private set; }
 
     private void Awake()
     {
         if (Instance == null)
         {
             Instance = this;
-            DontDestroyOnLoad(gameObject); // Keeps the SoundManager persistent across scenes
+            DontDestroyOnLoad(gameObject);
         }
         else
         {

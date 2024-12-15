@@ -1,16 +1,19 @@
 using UnityEngine;
-using Photon.Voice.Unity;
-using Photon.Pun;
 using Unity.Netcode;
+using Photon.Pun;
+using Photon.Voice.Unity;
 
 public class ProximityVoiceChat : NetworkBehaviour
 {
-    public float chatRange = 10f;
+    // UI Components
     private Recorder voiceRecorder;
+
+    // Defines
+    public float chatRange = 10f;
 
     private void Start()
     {
-        if (!IsOwner) return; // Only set up for the local player
+        if (!IsOwner) return;
 
         voiceRecorder = GetComponent<Recorder>();
         if (!voiceRecorder)
@@ -19,7 +22,6 @@ public class ProximityVoiceChat : NetworkBehaviour
             return;
         }
 
-        // Ensure recorder starts disabled
         voiceRecorder.TransmitEnabled = false;
     }
 
@@ -29,7 +31,6 @@ public class ProximityVoiceChat : NetworkBehaviour
 
         bool isOtherPlayerInRange = false;
 
-        // Proximity detection for players spawned by Netcode
         Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, chatRange);
         foreach (var hit in hits)
         {

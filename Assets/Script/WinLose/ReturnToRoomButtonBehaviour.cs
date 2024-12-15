@@ -8,14 +8,22 @@ using System.Collections;
 
 public class EndGameSceneBehaviour : MonoBehaviourPunCallbacks
 {
+    // UI Components
     public Button winLoseButton;
     public Button returnButton;
+
+    // Audio
     private AudioSource BackgroundMusic;
+
+    // Animations
     public Animator CarAnimator;
+
+    // GameObjects
     public GameObject RedTrafficLight;
     public GameObject GreenTrafficLight;
-    private bool isTransitioning = false;
 
+    // Defines
+    private bool isTransitioning = false;
     private int numberOfPlayers;
     private int maxNumberOfBosses;
     private int maxNumberOfWorkers;
@@ -25,16 +33,6 @@ public class EndGameSceneBehaviour : MonoBehaviourPunCallbacks
 
     void Start()
     {
-        BackgroundMusic = GameObject.Find("AudioManager/BackgroundMusic")?.GetComponent<AudioSource>();
-
-        if (BackgroundMusic != null)
-        {
-            BackgroundMusic.Play();
-        }
-        else
-        {
-            Debug.LogError($"BackgroundMusic not found at AudioManager/BackgroundMusic. Ensure AudioManager is set up correctly.");
-        }
         GreenTrafficLight.SetActive(false);
 
         if (RoomManager.Instance != null)
@@ -59,7 +57,6 @@ public class EndGameSceneBehaviour : MonoBehaviourPunCallbacks
 
         if (RoomManager.Instance != null)
         {
-            // Get temporary room info
             numberOfPlayers = RoomManager.Instance.numberOfPlayers;
             maxNumberOfBosses = RoomManager.Instance.maxNumberOfBosses;
             maxNumberOfWorkers = RoomManager.Instance.maxNumberOfWorkers;
@@ -72,7 +69,6 @@ public class EndGameSceneBehaviour : MonoBehaviourPunCallbacks
             Debug.LogError("RoomManager.Instance is null! Please initialize it.");
         }
 
-        // Ensure only the MasterClient recreates the room
         if (PhotonNetwork.IsMasterClient)
         {
             OnLeaveRoom();
@@ -82,6 +78,13 @@ public class EndGameSceneBehaviour : MonoBehaviourPunCallbacks
         {
             OnLeaveRoom();
             StartCoroutine(RejoinRoomAfterDelay());
+        }
+
+        BackgroundMusic = GameObject.Find("AudioManager/BackgroundMusic")?.GetComponent<AudioSource>();
+
+        if (BackgroundMusic != null)
+        {
+            BackgroundMusic.Play();
         }
     }
 

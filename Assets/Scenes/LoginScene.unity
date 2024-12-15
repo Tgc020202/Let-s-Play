@@ -1441,7 +1441,7 @@ Transform:
   m_GameObject: {fileID: 1180659523}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.5011032, y: -1.233981, z: -0.060151495}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1824,6 +1824,52 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 2450267673516763045, guid: 15018b4d504faf244b7478a0528ac626, type: 3}
   m_PrefabInstance: {fileID: 1582500086}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1643799950
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1643799951}
+  - component: {fileID: 1643799952}
+  m_Layer: 0
+  m_Name: SessionManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1643799951
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1643799950}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1643799952
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1643799950}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1f1bc8530a683844eb65e0c8e75fe7ac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  usernameInputField: {fileID: 656585101}
+  dbManager: {fileID: 1180659524}
 --- !u!1 &1649810220
 GameObject:
   m_ObjectHideFlags: 0
@@ -2361,6 +2407,7 @@ MonoBehaviour:
   passwordInputField: {fileID: 1668850473}
   usernameInvalidMessage: {fileID: 2084615013}
   passwordInvalidMessage: {fileID: 809989058}
+  statusMessage: {fileID: 2084615013}
   playButton: {fileID: 676549415}
   backToRegisterButton: {fileID: 1165910326}
   dbManager: {fileID: 1180659524}
@@ -2587,4 +2634,5 @@ SceneRoots:
   - {fileID: 1518380041}
   - {fileID: 1950355856}
   - {fileID: 1180659525}
+  - {fileID: 1643799951}
   - {fileID: 1006749924}

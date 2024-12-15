@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 using Photon.Pun;
 using Photon.Realtime;
 using Hashtable = ExitGames.Client.Photon.Hashtable;
@@ -8,7 +9,7 @@ using System.Collections;
 
 public class WaitingRoomManager : MonoBehaviourPunCallbacks
 {
-    // UI Elements
+    // UI Components
     public Button playButton;
     public Button readyButton;
     public Button leaveButton;
@@ -16,11 +17,21 @@ public class WaitingRoomManager : MonoBehaviourPunCallbacks
     private Outline playButtonOutline;
     private Outline readyButtonOutline;
     private Outline leaveButtonOutline;
+
+    // Audio
+    private AudioSource BackgroundMusic;
+
+    // Animations
     public Animator CarAnimator;
+
+    // GameObjects
     public GameObject RedTrafficLight;
     public GameObject GreenTrafficLight;
+
+    // Defines
     private bool isTransitioning = false;
     private bool readyClicked = false;
+
     private void Start()
     {
         PhotonNetwork.AutomaticallySyncScene = true;
@@ -34,7 +45,6 @@ public class WaitingRoomManager : MonoBehaviourPunCallbacks
             PhotonNetwork.LocalPlayer.SetCustomProperties(playerProperties);
         }
 
-        // Toggle button visibility based on ownership
         UpdateUIForOwnership();
 
         playButtonOutline = playButton.GetComponent<Outline>();
@@ -52,6 +62,8 @@ public class WaitingRoomManager : MonoBehaviourPunCallbacks
         GreenTrafficLight.SetActive(false);
 
         UpdatePlayButtonInteractable();
+
+        BackgroundMusic = GameObject.Find("AudioManager/BackgroundMusic").GetComponent<AudioSource>();
     }
 
     public void OnLeaveButtonClicked()
@@ -98,19 +110,9 @@ public class WaitingRoomManager : MonoBehaviourPunCallbacks
 
             if (isTransitioning) return;
             isTransitioning = true;
-            RedTrafficLight.SetActive(false);
-            GreenTrafficLight.SetActive(true);
-            CarAnimator.SetBool("isTurningToNextScene", true);
 
-            string roomName = "Game-Map" + mapIndex + "-Mode" + modeIndex;
-            StartCoroutine(DelayedSceneTransition(roomName));
+            LoadAnimation("Game-Map" + mapIndex + "-Mode" + modeIndex);
         }
-    }
-
-    IEnumerator DelayedSceneTransition(string sceneName)
-    {
-        yield return new WaitForSeconds(2f);
-        RoomManager.Instance.StartGame(sceneName);
     }
 
     public override void OnMasterClientSwitched(Player newMasterClient)
@@ -176,5 +178,21 @@ public class WaitingRoomManager : MonoBehaviourPunCallbacks
         playButton.gameObject.SetActive(PhotonNetwork.IsMasterClient);
         readyButton.gameObject.SetActive(!PhotonNetwork.IsMasterClient);
         leaveButton.gameObject.SetActive(!PhotonNetwork.IsMasterClient);
+    }
+
+    void LoadAnimation(string sceneName)
+    {
+        RedTrafficLight.SetActive(false);
+        GreenTrafficLight.SetActive(true);
+        CarAnimator.SetBool("isTurningToNextScene", true);
+
+        StartCoroutine(DelayedSceneTransition(sceneName));
+    }
+
+    IEnumerator DelayedSceneTransition(string sceneName)
+    {
+        yield return new WaitForSeconds(2f);
+        SceneManager.LoadScene(sceneName);
+        BackgroundMusic.Stop();
     }
 }

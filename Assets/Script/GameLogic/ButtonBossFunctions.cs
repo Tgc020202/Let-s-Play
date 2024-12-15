@@ -1,38 +1,44 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
-using System.Collections;
 using Unity.Netcode;
 
 public class ButtonBossFunctions : MonoBehaviour
 {
+    // UI Components
     private NetworkObject playerNetworkObject;
-    public PlayerMovement playerMovement;
-    public CollisionTriggerDisplay collisionTriggerDisplay;
     public Button runButton;
     public Button catchButton;
     private Text runButtonText;
 
-    // Panels
+    // Scripts
+    public PlayerMovement playerMovement;
+    public CollisionTriggerDisplay collisionTriggerDisplay;
+
+    // GameObjects
     public GameObject GameViewUI;
     public GameObject MapDesign;
     public GameObject GuidanceUI;
     private GameObject targetPlayer;
 
+    // Defines
     private float timer = 20f;
-
     private bool canUseRunButton = true;
     private bool canCatchPlayer = false;
 
+    // Messages
+    private const string RunMessage = "Run";
 
     void Start()
     {
+        GameViewUI.SetActive(false);
+        MapDesign.SetActive(false);
+        GuidanceUI.SetActive(true);
+
         runButton.onClick.AddListener(OnRunButtonClicked);
         catchButton.onClick.AddListener(OnCatchButtonClicked);
         runButtonText = runButton.GetComponentInChildren<Text>();
 
-        GameViewUI.SetActive(false);
-        MapDesign.SetActive(false);
-        GuidanceUI.SetActive(true);
         NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
     }
 
@@ -68,7 +74,6 @@ public class ButtonBossFunctions : MonoBehaviour
     {
         if (playerNetworkObject != null && playerNetworkObject.IsOwner && canUseRunButton)
         {
-            Debug.Log("Player " + playerNetworkObject.NetworkObjectId + " clicked the run button!");
             StartCoroutine(SpeedBoost());
         }
     }
@@ -80,7 +85,6 @@ public class ButtonBossFunctions : MonoBehaviour
 
         if (playerNetworkObject != null && playerNetworkObject.IsOwner && canCatchPlayer && targetPlayer != null)
         {
-            Debug.Log("Catch attempt on player: " + targetPlayer.GetComponent<NetworkObject>().NetworkObjectId);
             CatchPlayerServerRpc(targetPlayer.GetComponent<NetworkObject>().NetworkObjectId);
         }
     }
@@ -99,7 +103,7 @@ public class ButtonBossFunctions : MonoBehaviour
                 playerMovement.IncreaseSpeedServerRpc(false);
             }
         }
-        runButtonText.text = "Run";
+        runButtonText.text = RunMessage;
         canUseRunButton = true;
     }
 
@@ -124,10 +128,7 @@ public class ButtonBossFunctions : MonoBehaviour
                 targetPlayerManager.SetVisibilityServerRpc(false);
                 targetPlayerManager.SetColliderServerRpc(false);
 
-                Debug.Log("start run");
-                // Decrease the worker count when a player is caught
                 GameObject.FindObjectOfType<GameManager>()?.UpdateWorkerCountRequest(-1);
-                Debug.Log("end run");
             }
         }
     }

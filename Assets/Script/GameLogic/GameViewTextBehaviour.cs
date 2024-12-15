@@ -5,17 +5,23 @@ using Unity.Netcode;
 
 public class GameViewTextBehaviour : NetworkBehaviour
 {
+    // UI Components
     public Text gameDuration;
     public Text roleText;
 
+    // Audio
+    private AudioSource BackgroundMusic;
+
+    // GameObjects
     public GameObject BossControllerUI;
     public GameObject WorkerControllerUI;
 
-    private AudioSource BackgroundMusic;
-
-    public NetworkVariable<float> timerDuration = new NetworkVariable<float>(200f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+    // Defines
     private float timeRemaining;
     private bool hasMusicStarted = false;
+
+    // Network Variables
+    public NetworkVariable<float> timerDuration = new NetworkVariable<float>(200f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
     void Start()
     {
@@ -88,7 +94,6 @@ public class GameViewTextBehaviour : NetworkBehaviour
 
         NetworkManager.Singleton.Shutdown();
         Destroy(NetworkManager.Singleton.gameObject);
-        Debug.Log("Destroy already!!!");
 
         SceneManager.LoadScene("EndGameScene");
     }

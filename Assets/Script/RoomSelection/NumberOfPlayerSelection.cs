@@ -5,6 +5,7 @@ using UnityEngine.UI;
 
 public class NumberOfPlayerSelection : MonoBehaviour
 {
+    // UI Components
     public Button bossNextButton;
     public Button bossPreviousButton;
     public Button staffNextButton;
@@ -15,18 +16,19 @@ public class NumberOfPlayerSelection : MonoBehaviour
     public Text staffCountText;
     public Text sumText;
 
-    // Panels
+    // GameObjects
     public GameObject TotalNumberUI;
     public GameObject MapUI;
     public GameObject ModeUI;
 
+    // Defines
     public int bossCount;
     public int staffCount;
     public int totalNumberOfPlayer;
 
     void Start()
     {
-        // Default numbers
+        // Set default numbers
         bossCount = VariableHolder.defaultMaxNumberOfBosses;
         staffCount = VariableHolder.defaultMaxNumberOfWorkers;
         totalNumberOfPlayer = VariableHolder.defaultTotalNumberOfPlayer;

@@ -4,7 +4,9 @@ using Unity.Netcode;
 
 public class HostClientAssignManager : MonoBehaviour
 {
+    // Scripts
     private GameManager gameManager;
+
     private void Awake()
     {
         gameManager = FindObjectOfType<GameManager>();
@@ -29,7 +31,6 @@ public class HostClientAssignManager : MonoBehaviour
         {
             if (VariableHolder.networkRole == NetworkRole.Host)
             {
-                Debug.Log("No host found. Starting as Host...");
                 NetworkManager.Singleton.StartHost();
 
                 if (NetworkManager.Singleton.IsHost)
@@ -39,7 +40,6 @@ public class HostClientAssignManager : MonoBehaviour
             }
             else if (VariableHolder.networkRole == NetworkRole.Client)
             {
-                Debug.Log("Host exists. Starting as Client...");
                 NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
                 NetworkManager.Singleton.StartClient();
             }
@@ -58,7 +58,6 @@ public class HostClientAssignManager : MonoBehaviour
     {
         if (clientId == NetworkManager.Singleton.LocalClientId)
         {
-            Debug.Log("Client connected: " + clientId);
             gameManager.RequestRoleAssignmentServerRpc();
         }
     }

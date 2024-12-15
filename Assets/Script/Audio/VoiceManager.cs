@@ -1,6 +1,6 @@
-using Photon.Voice.Unity;
-using Photon.Pun;
 using UnityEngine;
+using Photon.Pun;
+using Photon.Voice.Unity;
 
 public class VoiceManager : MonoBehaviourPun
 {
