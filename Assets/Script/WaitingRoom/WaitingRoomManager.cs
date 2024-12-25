@@ -17,6 +17,7 @@ public class WaitingRoomManager : MonoBehaviourPunCallbacks
     private Outline playButtonOutline;
     private Outline readyButtonOutline;
     private Outline leaveButtonOutline;
+    public Transform playerListContent;
 
     // Audio
     private AudioSource BackgroundMusic;
@@ -27,6 +28,7 @@ public class WaitingRoomManager : MonoBehaviourPunCallbacks
     // GameObjects
     public GameObject RedTrafficLight;
     public GameObject GreenTrafficLight;
+    public GameObject playerButtonPrefab;
 
     // Defines
     private bool isTransitioning = false;
@@ -46,6 +48,7 @@ public class WaitingRoomManager : MonoBehaviourPunCallbacks
         }
 
         UpdateUIForOwnership();
+        UpdatePlayerList();
 
         playButtonOutline = playButton.GetComponent<Outline>();
         readyButtonOutline = readyButton.GetComponent<Outline>();
@@ -64,6 +67,28 @@ public class WaitingRoomManager : MonoBehaviourPunCallbacks
         UpdatePlayButtonInteractable();
 
         BackgroundMusic = GameObject.Find("AudioManager/BackgroundMusic").GetComponent<AudioSource>();
+    }
+
+    public override void OnPlayerLeftRoom(Player otherPlayer)
+    {
+        UpdatePlayerList();
+    }
+
+    private void UpdatePlayerList()
+    {
+        foreach (Transform player in playerListContent)
+        {
+            Destroy(player.gameObject);
+        }
+
+        foreach (Player player in PhotonNetwork.PlayerList)
+        {
+            GameObject playerButton = Instantiate(playerButtonPrefab, playerListContent);
+            if (playerButton != null)
+            {
+                playerButton.GetComponentInChildren<Text>().text = player.NickName;
+            }
+        }
     }
 
     public void OnLeaveButtonClicked()
@@ -145,6 +170,7 @@ public class WaitingRoomManager : MonoBehaviourPunCallbacks
 
     public override void OnPlayerEnteredRoom(Player newPlayer)
     {
+        UpdatePlayerList();
         UpdatePlayButtonInteractable();
     }
 

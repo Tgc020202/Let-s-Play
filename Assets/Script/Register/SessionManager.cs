@@ -7,7 +7,7 @@ public class SessionManager : MonoBehaviour
     public DatabaseManager dbManager;
 
     // Defines
-    public string username;
+    public string username; // here
 
     // Instance
     public static SessionManager Instance;

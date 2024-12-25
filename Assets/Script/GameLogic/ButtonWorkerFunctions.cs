@@ -13,6 +13,7 @@ public class ButtonWorkerFunctions : MonoBehaviour
     public Button greenButton;
     public Button completeTaskButton;   // test
     private Text runButtonText;
+    private Text greenButtonText;
 
     // Scripts
     public PlayerMovement playerMovement;
@@ -36,6 +37,7 @@ public class ButtonWorkerFunctions : MonoBehaviour
         redButton.onClick.AddListener(OnRedButtonClicked);
         greenButton.onClick.AddListener(OnGreenButtonClicked);
         runButtonText = runButton.GetComponentInChildren<Text>();
+        greenButtonText = greenButton.GetComponentInChildren<Text>();
 
         GameViewUI.SetActive(false);
         MapDesign.SetActive(false);
@@ -87,9 +89,11 @@ public class ButtonWorkerFunctions : MonoBehaviour
             var playerManager = playerNetworkObject.GetComponent<PlayerManager>();
             if (playerManager != null && !playerManager.isImmuneToCatch)
             {
+                ChangePlayerColor(Color.black);
+
                 // Task 2: Run Button Press
                 taskManager.RunButtonPressed();
-                StartCoroutine(SpeedBoost());
+                StartCoroutine(SpeedBoostCoolDown());
             }
             else
             {
@@ -118,14 +122,11 @@ public class ButtonWorkerFunctions : MonoBehaviour
         targetPlayer = collisionTriggerDisplay.targetPlayer;
         canHelpPlayer = collisionTriggerDisplay.canHelpPlayer;
 
-        ChangePlayerColor(Color.green);
+        StartCoroutine(HelpBoostCoolDown(false));
 
         if (playerNetworkObject != null && playerNetworkObject.IsOwner && canHelpPlayer && targetPlayer != null)
         {
-            ChangePlayerColor(Color.green);
             HelpPlayerServerRpc(targetPlayer.GetComponent<NetworkObject>().NetworkObjectId);
-
-            GameObject.FindObjectOfType<GameManager>()?.UpdateWorkerCountRequest(+1);
         }
     }
 
@@ -141,15 +142,18 @@ public class ButtonWorkerFunctions : MonoBehaviour
                 {
                     playerManager.ResetColorAfterDelay(2f);
                 }
+                else if (color == Color.black)
+                {
+                    playerManager.ResetColorAfterDelay(5f);
+                }
             }
         }
     }
 
-
-    IEnumerator SpeedBoost()
+    IEnumerator SpeedBoostCoolDown()
     {
         canUseRunButton = false;
-        playerMovement.IncreaseSpeedServerRpc(true);
+        playerMovement.IncreaseSpeedServerRpc(true, 10f);
 
         for (int i = 20; i > 0; i--)
         {
@@ -157,11 +161,28 @@ public class ButtonWorkerFunctions : MonoBehaviour
             yield return new WaitForSeconds(1);
             if (i == 16)
             {
-                playerMovement.IncreaseSpeedServerRpc(false);
+                playerMovement.IncreaseSpeedServerRpc(false, 10f);
             }
         }
         runButtonText.text = "Run";
         canUseRunButton = true;
+    }
+
+    IEnumerator HelpBoostCoolDown(bool isActive)
+    {
+        int coolDownTime = isActive ? 5 : 3;
+        Debug.Log("isActive: " + isActive);
+        Debug.Log("coolDownTime: " + coolDownTime);
+
+        greenButton.interactable = false;
+
+        for (int i = coolDownTime; i > 0; i--)
+        {
+            greenButtonText.text = i + "s";
+            yield return new WaitForSeconds(1);
+        }
+        greenButtonText.text = "Green";
+        greenButton.interactable = true;
     }
 
     void OnSkipGuidanceUI()
@@ -194,12 +215,18 @@ public class ButtonWorkerFunctions : MonoBehaviour
         if (targetNetworkObject != null)
         {
             var targetPlayerManager = targetNetworkObject.GetComponent<PlayerManager>();
-            if (targetPlayerManager != null)
+
+            if (targetPlayerManager != null && targetPlayerManager.isImmuneToCatch)
             {
+                ChangePlayerColor(Color.green);
+                StartCoroutine(HelpBoostCoolDown(true));
+
                 targetPlayerManager.SetMovementEnabledServerRpc(true);
                 targetPlayerManager.SetImmunityServerRpc(false);
                 targetPlayerManager.SetPlayerColorServerRpc(Color.yellow);
                 targetPlayerManager.ResetColorAfterDelay(2f);
+
+                GameObject.FindObjectOfType<GameManager>()?.UpdateWorkerCountRequest(+1);
             }
         }
     }

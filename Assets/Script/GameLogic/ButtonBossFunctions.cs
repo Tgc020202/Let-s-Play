@@ -74,7 +74,7 @@ public class ButtonBossFunctions : MonoBehaviour
     {
         if (playerNetworkObject != null && playerNetworkObject.IsOwner && canUseRunButton)
         {
-            StartCoroutine(SpeedBoost());
+            StartCoroutine(SpeedBoostCoolDown());
         }
     }
 
@@ -89,18 +89,18 @@ public class ButtonBossFunctions : MonoBehaviour
         }
     }
 
-    IEnumerator SpeedBoost()
+    IEnumerator SpeedBoostCoolDown()
     {
         canUseRunButton = false;
-        playerMovement.IncreaseSpeedServerRpc(true);
+        playerMovement.IncreaseSpeedServerRpc(true, 20f);
 
         for (int i = 20; i > 0; i--)
         {
             runButtonText.text = i + "s";
             yield return new WaitForSeconds(1);
-            if (i == 16)
+            if (i == 10)
             {
-                playerMovement.IncreaseSpeedServerRpc(false);
+                playerMovement.IncreaseSpeedServerRpc(false, 20f);
             }
         }
         runButtonText.text = RunMessage;

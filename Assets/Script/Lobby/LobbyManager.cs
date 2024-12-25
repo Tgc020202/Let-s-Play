@@ -60,6 +60,7 @@ public class LobbyManager : MonoBehaviourPunCallbacks
     private void Start()
     {
         GreenTrafficLight.SetActive(false);
+        PhotonNetwork.NickName = SessionManager.Instance.username;
         RoomManager.Instance.ConnectToPhoton();
 
         uiDictionary = new Dictionary<string, GameObject>

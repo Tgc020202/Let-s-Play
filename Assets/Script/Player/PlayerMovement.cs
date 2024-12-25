@@ -63,9 +63,9 @@ public class PlayerMovement : NetworkBehaviour
 
     // Speed of the player movement
     [ServerRpc]
-    public void IncreaseSpeedServerRpc(bool isIncrease)
+    public void IncreaseSpeedServerRpc(bool isIncrease, float boost)
     {
-        speed = isIncrease ? speed + 20f : speed - 20f;
+        speed = isIncrease ? speed + boost : speed - boost;
         Debug.Log("Speed become: " + speed);
     }
 

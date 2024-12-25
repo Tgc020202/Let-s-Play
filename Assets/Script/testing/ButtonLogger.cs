@@ -53,7 +53,7 @@ public class ButtonLogger : MonoBehaviour
     {
         // canUseRunButton = false;
 
-        playerMovement.IncreaseSpeedServerRpc(true);
+        playerMovement.IncreaseSpeedServerRpc(true, 20f);
 
         // Countdown from 20 seconds
         for (int i = 20; i > 0; i--)
@@ -62,7 +62,7 @@ public class ButtonLogger : MonoBehaviour
             yield return new WaitForSeconds(1); // Wait 1 second per count
             if (i == 16)
             {
-                playerMovement.IncreaseSpeedServerRpc(false);
+                playerMovement.IncreaseSpeedServerRpc(false, 20f);
             }
         }
         runButtonText.text = "Run";
