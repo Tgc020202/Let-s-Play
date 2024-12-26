@@ -14,9 +14,6 @@ public class LoginManager : MonoBehaviour
     public Button playButton;
     public Button backToRegisterButton;
 
-    // Scripts
-    public DatabaseManager dbManager;
-
     // Audio
     private AudioSource BackgroundMusic;
 
@@ -55,14 +52,14 @@ public class LoginManager : MonoBehaviour
         username = usernameInputField.text;
         password = passwordInputField.text;
 
-        StartCoroutine(dbManager.GetUser(username, user =>
+        StartCoroutine(DatabaseManager.Instance.GetUser(username, user =>
         {
             if (user != null && password == user.password && user.status == false)
             {
                 usernameInvalidMessage.text = EmptyMessage;
                 passwordInvalidMessage.text = EmptyMessage;
 
-                dbManager.UpdateUserStatus(username, true);
+                DatabaseManager.Instance.UpdateUserStatus(username, true);
 
                 if (SessionManager.Instance != null) SessionManager.Instance.username = username;
 

@@ -9,6 +9,7 @@ public class PlayerManager : NetworkBehaviour
 
     // Defines
     public bool isImmuneToCatch;
+    public bool isSpectacle;
 
     // Network Variables
     public NetworkVariable<Color> PlayerColor = new NetworkVariable<Color>(Color.white);
@@ -85,10 +86,14 @@ public class PlayerManager : NetworkBehaviour
     [ClientRpc]
     private void SetColliderClientRpc(bool enabled)
     {
-        var collider = GetComponent<Collider2D>();
-        if (collider != null)
+        var colliders = GetComponents<Collider2D>();
+        isSpectacle = colliders == null || colliders.Length == 0;
+        if (!isSpectacle)
         {
-            collider.enabled = enabled;
+            foreach (var collider in colliders)
+            {
+                collider.enabled = enabled;
+            }
         }
     }
 

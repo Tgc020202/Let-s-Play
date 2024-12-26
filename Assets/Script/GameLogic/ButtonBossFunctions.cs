@@ -10,6 +10,7 @@ public class ButtonBossFunctions : MonoBehaviour
     public Button runButton;
     public Button catchButton;
     private Text runButtonText;
+    private Text catchButtonText;
 
     // Scripts
     public PlayerMovement playerMovement;
@@ -38,6 +39,7 @@ public class ButtonBossFunctions : MonoBehaviour
         runButton.onClick.AddListener(OnRunButtonClicked);
         catchButton.onClick.AddListener(OnCatchButtonClicked);
         runButtonText = runButton.GetComponentInChildren<Text>();
+        catchButtonText = catchButton.GetComponentInChildren<Text>();
 
         NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
     }
@@ -83,6 +85,8 @@ public class ButtonBossFunctions : MonoBehaviour
         targetPlayer = collisionTriggerDisplay.targetPlayer;
         canCatchPlayer = collisionTriggerDisplay.canCatchPlayer;
 
+        StartCoroutine(CatchCoolDown(false));
+
         if (playerNetworkObject != null && playerNetworkObject.IsOwner && canCatchPlayer && targetPlayer != null)
         {
             CatchPlayerServerRpc(targetPlayer.GetComponent<NetworkObject>().NetworkObjectId);
@@ -107,6 +111,21 @@ public class ButtonBossFunctions : MonoBehaviour
         canUseRunButton = true;
     }
 
+    IEnumerator CatchCoolDown(bool isActive)
+    {
+        int coolDownTime = isActive ? 5 : 3;
+
+        catchButton.interactable = false;
+
+        for (int i = coolDownTime; i > 0; i--)
+        {
+            catchButtonText.text = i + "s";
+            yield return new WaitForSeconds(1);
+        }
+        catchButtonText.text = "Catch";
+        catchButton.interactable = true;
+    }
+
     void OnSkipGuidanceUI()
     {
         MapDesign.SetActive(true);
@@ -123,12 +142,15 @@ public class ButtonBossFunctions : MonoBehaviour
         {
             var targetPlayerManager = targetNetworkObject.GetComponent<PlayerManager>();
 
-            if (targetPlayerManager != null && !targetPlayerManager.isImmuneToCatch)
+            if (targetPlayerManager != null && !targetPlayerManager.isImmuneToCatch && !targetPlayerManager.isSpectacle)
             {
+                StartCoroutine(CatchCoolDown(true));
+
                 targetPlayerManager.SetVisibilityServerRpc(false);
                 targetPlayerManager.SetColliderServerRpc(false);
 
                 GameObject.FindObjectOfType<GameManager>()?.UpdateWorkerCountRequest(-1);
+                targetPlayerManager.isSpectacle = true;
             }
         }
     }

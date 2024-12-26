@@ -12,7 +12,6 @@ public class RegisterManager : MonoBehaviour
     public Text usernameInvalidMessage;
     public Text passwordInvalidMessage;
     public Button submitButton;
-    public DatabaseManager dbManager;
 
     // Audio
     private AudioSource BackgroundMusic;
@@ -89,7 +88,7 @@ public class RegisterManager : MonoBehaviour
 
         if (!string.IsNullOrEmpty(username) && IsValidPassword(password))
         {
-            StartCoroutine(dbManager.CheckUsernameExists(username, usernameExists =>
+            StartCoroutine(DatabaseManager.Instance.CheckUsernameExists(username, usernameExists =>
             {
                 if (!usernameExists)
                 {
@@ -97,7 +96,7 @@ public class RegisterManager : MonoBehaviour
                     usernameInvalidMessage.text = EmptyMessage;
 
                     // Initialize status to false
-                    dbManager.CreateUser(username, password, false);
+                    DatabaseManager.Instance.CreateUser(username, password, false);
 
                     if (isTransitioning) return;
                     isTransitioning = true;

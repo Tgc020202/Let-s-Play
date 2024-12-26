@@ -3,9 +3,6 @@ using Firebase.Database;
 
 public class SessionManager : MonoBehaviour
 {
-    // Scripts
-    public DatabaseManager dbManager;
-
     // Defines
     public string username; // here
 
@@ -29,7 +26,7 @@ public class SessionManager : MonoBehaviour
     {
         if (!string.IsNullOrEmpty(username))
         {
-            dbManager.UpdateUserStatus(username, false);
+            DatabaseManager.Instance.UpdateUserStatus(username, false);
         }
     }
 }

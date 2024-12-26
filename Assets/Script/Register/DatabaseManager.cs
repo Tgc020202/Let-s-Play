@@ -8,10 +8,23 @@ public class DatabaseManager : MonoBehaviour
 {
     // Scripts
     private DatabaseReference dbReference;
-    
-    void Start()
+
+    // Instance
+    public static DatabaseManager Instance;
+
+    private void Awake()
     {
-        dbReference = FirebaseDatabase.DefaultInstance.RootReference;
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+
+            dbReference = FirebaseDatabase.DefaultInstance.RootReference;
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
     }
 
     public void CreateUser(string username, string password, bool status)
@@ -23,7 +36,7 @@ public class DatabaseManager : MonoBehaviour
 
     public IEnumerator GetUser(string username, Action<User> callback)
     {
-        var userData = dbReference.Child("users").Child(username).GetValueAsync();
+        var userData = dbReference.Child("users").Child(username).GetValueAsync();  // error here
 
         yield return new WaitUntil(() => userData.IsCompleted);
 

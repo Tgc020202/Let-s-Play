@@ -171,8 +171,6 @@ public class ButtonWorkerFunctions : MonoBehaviour
     IEnumerator HelpBoostCoolDown(bool isActive)
     {
         int coolDownTime = isActive ? 5 : 3;
-        Debug.Log("isActive: " + isActive);
-        Debug.Log("coolDownTime: " + coolDownTime);
 
         greenButton.interactable = false;
 
