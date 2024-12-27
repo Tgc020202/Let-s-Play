@@ -190,7 +190,16 @@ public class LobbyManager : MonoBehaviourPunCallbacks
             IsOpen = true
         };
 
-        Hashtable customProperties = new Hashtable { { "roomCode", roomNameInput.text } };
+        Hashtable customProperties = new Hashtable
+        {
+            { "roomCode", roomNameInput.text },
+            { "currentMapIndex", mapSelection.currentMapIndex },
+            { "currentModeIndex", modeSelection.currentModeIndex }
+        };
+
+        options.CustomRoomProperties = customProperties;
+        options.CustomRoomPropertiesForLobby = new string[] { "roomCode", "currentMapIndex", "currentModeIndex" };
+
         PhotonNetwork.CreateRoom(roomNameInput.text, options, null);
     }
 
@@ -201,7 +210,13 @@ public class LobbyManager : MonoBehaviourPunCallbacks
 
         LoadAnimation("WaitingRoomScene");
 
-        Hashtable customProperties = new Hashtable { { "roomCode", roomNameInput.text } };
+        Hashtable customProperties = new Hashtable
+        {
+            { "roomCode", roomNameInput.text },
+            { "currentMapIndex", mapSelection.currentMapIndex },
+            { "currentModeIndex", modeSelection.currentModeIndex }
+        };
+
         PhotonNetwork.CurrentRoom.SetCustomProperties(customProperties);
     }
 
@@ -298,9 +313,6 @@ public class LobbyManager : MonoBehaviourPunCallbacks
                 {
                     joinButton.onClick.AddListener(() =>
                     {
-                        // Store variables
-                        RoomManager.Instance.roomName = room.Name;
-
                         if (isTransitioning) return;
                         isTransitioning = true;
 
@@ -314,9 +326,27 @@ public class LobbyManager : MonoBehaviourPunCallbacks
 
     public override void OnJoinedRoom()
     {
-        if (PhotonNetwork.CurrentRoom.CustomProperties.ContainsKey("roomCode"))
+        Hashtable customProperties = PhotonNetwork.CurrentRoom.CustomProperties;
+
+        if (customProperties.ContainsKey("roomCode"))
         {
-            Debug.Log("RoomCode: " + PhotonNetwork.CurrentRoom.CustomProperties["roomCode"].ToString());
+            string roomCode = customProperties["roomCode"].ToString();
+            RoomManager.Instance.roomName = roomCode;
+            Debug.Log("Room Code: " + roomCode);
+        }
+
+        if (customProperties.ContainsKey("currentMapIndex"))
+        {
+            int mapIndex = (int)customProperties["currentMapIndex"];
+            RoomManager.Instance.currentMapIndex = mapIndex;
+            Debug.Log("Map Index: " + mapIndex);
+        }
+
+        if (customProperties.ContainsKey("currentModeIndex"))
+        {
+            int modeIndex = (int)customProperties["currentModeIndex"];
+            RoomManager.Instance.currentModeIndex = modeIndex;
+            Debug.Log("Mode Index: " + modeIndex);
         }
     }
 

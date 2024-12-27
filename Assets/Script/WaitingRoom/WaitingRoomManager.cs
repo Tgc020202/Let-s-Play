@@ -14,6 +14,8 @@ public class WaitingRoomManager : MonoBehaviourPunCallbacks
     public Button readyButton;
     public Button leaveButton;
     public Text roomNameText;
+    public Text gameModeText;
+    public Text mapText;
     private Outline playButtonOutline;
     private Outline readyButtonOutline;
     private Outline leaveButtonOutline;
@@ -33,13 +35,42 @@ public class WaitingRoomManager : MonoBehaviourPunCallbacks
     // Defines
     private bool isTransitioning = false;
     private bool readyClicked = false;
+    private string roomName;
+    private string map;
 
     private void Start()
     {
         PhotonNetwork.AutomaticallySyncScene = true;
 
-        string roomName = RoomManager.Instance.roomName;
+        roomName = RoomManager.Instance.roomName;
         roomNameText.text = roomName;
+
+        switch (RoomManager.Instance.currentModeIndex)
+        {
+            case 1:
+                gameModeText.text = "Secret Murder";
+                break;
+            case 2:
+                gameModeText.text = "Vote Murder";
+                break;
+            default:
+                gameModeText.text = "Random Mode";
+                break;
+        }
+
+        switch (RoomManager.Instance.currentMapIndex)
+        {
+            case 1:
+                mapText.text = "Small Map";
+                break;
+            case 2:
+                mapText.text = "Large Map";
+                break;
+            default:
+                mapText.text = "Random Map";
+                break;
+        }
+
 
         if (PhotonNetwork.IsMasterClient)
         {

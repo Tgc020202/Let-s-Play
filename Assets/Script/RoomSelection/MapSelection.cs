@@ -26,7 +26,7 @@ public class MapSelection : MonoBehaviour
         nextButton.onClick.AddListener(OnNextClicked);
         previousButton.onClick.AddListener(OnPreviousClicked);
         mapButton.onClick.AddListener(OnMapButtonClicked);
-        backButon.onClick.AddListener(OnBackButonClicked);
+        backButon.onClick.AddListener(OnBackButtonClicked);
 
         UpdateMapText();
         previousButton.interactable = false;
@@ -59,8 +59,18 @@ public class MapSelection : MonoBehaviour
 
     void UpdateMapText()
     {
-        mapText.text = "Map " + currentMapIndex.ToString();
-        VariableHolder.modeCode = "Map" + currentMapIndex.ToString();
+        switch (currentMapIndex)
+        {
+            case 1:
+                mapText.text = "Small Map";
+                break;
+            case 2:
+                mapText.text = "Large Map";
+                break;
+            default:
+                mapText.text = "Random Map";
+                break;
+        }
     }
 
     void OnMapButtonClicked()
@@ -70,7 +80,7 @@ public class MapSelection : MonoBehaviour
         ModeUI.SetActive(false);
     }
 
-    void OnBackButonClicked()
+    void OnBackButtonClicked()
     {
         TotalNumberUI.SetActive(false);
         MapUI.SetActive(false);

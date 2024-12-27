@@ -8,7 +8,6 @@ public class ModeSelection : MonoBehaviour
     // UI Components
     public Button previousButton;
     public Button nextButton;
-    public Button modeButton;
     public Button backButon;
     public Text modeText;
 
@@ -25,7 +24,6 @@ public class ModeSelection : MonoBehaviour
     {
         nextButton.onClick.AddListener(OnNextClicked);
         previousButton.onClick.AddListener(OnPreviousClicked);
-        modeButton.onClick.AddListener(OnModeButtonClicked);
         backButon.onClick.AddListener(OnBackButtonClicked);
 
         UpdateModeText();
@@ -56,26 +54,21 @@ public class ModeSelection : MonoBehaviour
 
     void UpdateModeText()
     {
-        if (currentModeIndex == 1)
+        switch (currentModeIndex)
         {
-            modeText.text = "Game Mode 1\n(Secret Murder)";
-            VariableHolder.modeCode = "Mode1";
+            case 1:
+                modeText.text = "Game Mode 1\n(Secret Murder)";
+                break;
+            case 2:
+                modeText.text = "Game Mode 2\n(Vote Murder)";
+                break;
+            case 3:
+                modeText.text = "Game Mode 3\n(Random Mode)";
+                break;
+            default:
+                modeText.text = "Unknown Mode";
+                break;
         }
-        else if (currentModeIndex == 2)
-        {
-            modeText.text = "Game Mode 2\n(Vote Murder)";
-            VariableHolder.modeCode = "Mode2";
-        }
-        else if (currentModeIndex == 3)
-        {
-            modeText.text = "Game Mode 3\n(Zombie Murder)";
-            VariableHolder.modeCode = "Mode3";
-        }
-    }
-
-    void OnModeButtonClicked()
-    {
-        Debug.Log("Mode: " + currentModeIndex);
     }
 
     void OnBackButtonClicked()
