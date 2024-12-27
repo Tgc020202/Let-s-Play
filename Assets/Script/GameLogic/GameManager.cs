@@ -5,21 +5,26 @@ using Unity.Netcode;
 
 public class GameManager : NetworkBehaviour
 {
+    // UI Components
+    public Transform[] spawnPoints;
     public Text roleText;
+
+    // GameObjects
     public GameObject BossControllerUI;
     public GameObject WorkerControllerUI;
     public GameObject BasicControllerUI;
 
-    private NetworkVariable<int> numberOfBosses = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
-    private NetworkVariable<int> numberOfWorkers = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
-
+    // Defines
     private Dictionary<ulong, bool> rolesAssigned = new Dictionary<ulong, bool>();
     public List<ulong> listBossAssigned = new List<ulong>();
-
     private int maxNumberOfBosses;
     private int maxNumberOfWorkers;
     private bool isGameStart = false;
     private bool oneshot = true;
+
+    // Network Variables
+    private NetworkVariable<int> numberOfBosses = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+    private NetworkVariable<int> numberOfWorkers = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
     void Start()
     {
@@ -52,14 +57,21 @@ public class GameManager : NetworkBehaviour
             numberOfBosses.OnValueChanged += OnRoleCountChanged;
             numberOfWorkers.OnValueChanged += OnRoleCountChanged;
 
-            AssignRoleLogic(NetworkManager.Singleton.LocalClientId);
+            if (!rolesAssigned.ContainsKey(NetworkManager.Singleton.LocalClientId))
+            {
+                AssignRoleLogic(NetworkManager.Singleton.LocalClientId);
+            }
         }
 
         if (IsClient && !IsHost)
         {
-            RequestRoleAssignmentServerRpc();
+            if (!rolesAssigned.ContainsKey(NetworkManager.Singleton.LocalClientId))
+            {
+                RequestRoleAssignmentServerRpc();
+            }
         }
     }
+
 
     public void OnRoleCountChanged(int oldValue, int newValue)
     {
@@ -75,29 +87,25 @@ public class GameManager : NetworkBehaviour
 
     private void AssignRoleLogic(ulong clientId)
     {
-        if (!rolesAssigned.ContainsKey(clientId) || !rolesAssigned[clientId])
-        {
-            int randomRole = Random.Range(0, 2); // 0 = Worker, 1 = Boss
-            // int randomRole = IsServer || IsHost ? 1 : 0; // Debug uses purpose
+        if (rolesAssigned.ContainsKey(clientId) && rolesAssigned[clientId]) return;
 
-            if (randomRole == 1 && numberOfBosses.Value < maxNumberOfBosses)
-            {
-                AssignBoss(clientId);
-            }
-            else if (numberOfWorkers.Value < maxNumberOfWorkers)
-            {
-                AssignWorker(clientId);
-            }
-            else
-            {
-                AssignBoss(clientId);
-            }
+        int randomRole = Random.Range(0, 2); // 0 = Worker, 1 = Boss
+
+        if (randomRole == 1 && numberOfBosses.Value < maxNumberOfBosses)
+        {
+            AssignBoss(clientId);
+        }
+        else if (numberOfWorkers.Value < maxNumberOfWorkers)
+        {
+            AssignWorker(clientId);
         }
         else
         {
-            Debug.Log("Role already assigned for clientId: " + clientId);
+            AssignBoss(clientId);
         }
+        SpawnPlayer(clientId);
     }
+
 
     private void AssignBoss(ulong clientId)
     {
@@ -127,6 +135,42 @@ public class GameManager : NetworkBehaviour
         BasicControllerUI.SetActive(true);
 
         Debug.Log("Updated UI for clientId: " + clientId + " with role: " + role);
+    }
+
+    private void SpawnPlayer(ulong clientId)
+    {
+        if (spawnPoints.Length == 0)
+        {
+            Debug.LogError("No spawn points assigned in the Inspector!");
+            return;
+        }
+
+        int spawnIndex = Random.Range(0, spawnPoints.Length);
+        Transform spawnPoint = spawnPoints[spawnIndex];
+
+        var playerObject = NetworkManager.Singleton.ConnectedClients[clientId].PlayerObject;
+
+        if (playerObject == null)
+        {
+            Debug.LogError($"PlayerObject for client {clientId} not found!");
+            return;
+        }
+
+        // Check if the player object has already been spawned
+        NetworkObject playerNetworkObject = playerObject.GetComponent<NetworkObject>();
+        if (playerNetworkObject != null && !playerNetworkObject.IsSpawned)
+        {
+            playerNetworkObject.SpawnAsPlayerObject(clientId);
+        }
+        else
+        {
+            Debug.Log("Player object already spawned.");
+        }
+
+        playerObject.transform.position = spawnPoint.position;
+        playerObject.transform.rotation = spawnPoint.rotation;
+
+        Debug.Log($"Player {clientId} moved to {spawnPoint.position}");
     }
 
     public void UpdateWorkerCountRequest(int delta)
