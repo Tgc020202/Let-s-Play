@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using Photon.Pun;
 
@@ -12,6 +13,7 @@ public class RoomManager : MonoBehaviour
     public string roomName;
     public bool isBossWin;
     public bool gameStarted = false;
+    public List<string> mostVotePlayer;
 
     // Instance
     public static RoomManager Instance;

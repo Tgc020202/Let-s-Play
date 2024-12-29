@@ -35,7 +35,7 @@ public class HostClientAssignManager : MonoBehaviour
 
                 if (NetworkManager.Singleton.IsHost)
                 {
-                    gameManager.RequestRoleAssignmentServerRpc();
+                    gameManager.RequestRoleAssignmentServerRpc(SessionManager.Instance.username);
                 }
             }
             else if (VariableHolder.networkRole == NetworkRole.Client)
@@ -58,7 +58,7 @@ public class HostClientAssignManager : MonoBehaviour
     {
         if (clientId == NetworkManager.Singleton.LocalClientId)
         {
-            gameManager.RequestRoleAssignmentServerRpc();
+            gameManager.RequestRoleAssignmentServerRpc(SessionManager.Instance.username);
         }
     }
 }

@@ -31,7 +31,9 @@ public class LoginManager : MonoBehaviour
 
     // Messages
     private const string UsernameNotExistMessage = "Username does not exist.";
+    private const string UsernameEmptyMessage = "Username cannot be empty.";
     private const string IncorrectPasswordMessage = "Incorrect password.";
+    private const string PasswordEmptyMessage = "Password cannot be empty.";
     private const string StatusIsActiveMessage = "Username is active.";
     private const string EmptyMessage = "";
 
@@ -52,41 +54,47 @@ public class LoginManager : MonoBehaviour
         username = usernameInputField.text;
         password = passwordInputField.text;
 
-        StartCoroutine(DatabaseManager.Instance.GetUser(username, user =>
+        usernameInvalidMessage.text = string.IsNullOrEmpty(username) ? UsernameEmptyMessage : EmptyMessage;
+        passwordInvalidMessage.text = string.IsNullOrEmpty(password) ? PasswordEmptyMessage : EmptyMessage;
+
+        if (!string.IsNullOrEmpty(username) && !string.IsNullOrEmpty(password))
         {
-            if (user != null && password == user.password && user.status == false)
+            StartCoroutine(DatabaseManager.Instance.GetUser(username, user =>
             {
-                usernameInvalidMessage.text = EmptyMessage;
-                passwordInvalidMessage.text = EmptyMessage;
-
-                DatabaseManager.Instance.UpdateUserStatus(username, true);
-
-                if (SessionManager.Instance != null) SessionManager.Instance.username = username;
-
-                if (isTransitioning) return;
-                isTransitioning = true;
-                LoadAnimation("LobbyScene");
-            }
-            else
-            {
-                if (user == null)
+                if (user != null && password == user.password && user.status == false)
                 {
-                    usernameInvalidMessage.text = UsernameNotExistMessage;
-                }
-                else if (password != user.password)
-                {
-                    passwordInvalidMessage.text = IncorrectPasswordMessage;
-                }
-                else if (user.status != null && user.status == true)
-                {
-                    usernameInvalidMessage.text = StatusIsActiveMessage;
+                    usernameInvalidMessage.text = EmptyMessage;
+                    passwordInvalidMessage.text = EmptyMessage;
+
+                    DatabaseManager.Instance.UpdateUserStatus(username, true);
+
+                    if (SessionManager.Instance != null) SessionManager.Instance.username = username;
+
+                    if (isTransitioning) return;
+                    isTransitioning = true;
+                    LoadAnimation("LobbyScene");
                 }
                 else
                 {
-                    Debug.LogWarning("Something wrong.");
+                    if (user == null)
+                    {
+                        usernameInvalidMessage.text = UsernameNotExistMessage;
+                    }
+                    else if (password != user.password)
+                    {
+                        passwordInvalidMessage.text = IncorrectPasswordMessage;
+                    }
+                    else if (user.status != null && user.status == true)
+                    {
+                        usernameInvalidMessage.text = StatusIsActiveMessage;
+                    }
+                    else
+                    {
+                        Debug.LogWarning("Something wrong.");
+                    }
                 }
-            }
-        }));
+            }));
+        }
     }
 
     void OnBackToRegisterButton()

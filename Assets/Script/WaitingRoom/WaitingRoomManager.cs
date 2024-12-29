@@ -1,11 +1,12 @@
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using Photon.Pun;
 using Photon.Realtime;
 using Hashtable = ExitGames.Client.Photon.Hashtable;
-using System.Collections;
 
 public class WaitingRoomManager : MonoBehaviourPunCallbacks
 {
@@ -13,6 +14,7 @@ public class WaitingRoomManager : MonoBehaviourPunCallbacks
     public Button playButton;
     public Button readyButton;
     public Button leaveButton;
+    public Button votingButton;
     public Text roomNameText;
     public Text gameModeText;
     public Text mapText;
@@ -20,6 +22,7 @@ public class WaitingRoomManager : MonoBehaviourPunCallbacks
     private Outline readyButtonOutline;
     private Outline leaveButtonOutline;
     public Transform playerListContent;
+    public Transform votePlayerListContent;
 
     // Audio
     private AudioSource BackgroundMusic;
@@ -31,12 +34,16 @@ public class WaitingRoomManager : MonoBehaviourPunCallbacks
     public GameObject RedTrafficLight;
     public GameObject GreenTrafficLight;
     public GameObject playerButtonPrefab;
+    public GameObject VotingBossUI;
 
     // Defines
     private bool isTransitioning = false;
+    private bool isVoted = false;
     private bool readyClicked = false;
     private string roomName;
     private string map;
+    private string voteWho;
+    private int currentNumberOfPlayers = 0;
 
     private void Start()
     {
@@ -44,6 +51,7 @@ public class WaitingRoomManager : MonoBehaviourPunCallbacks
 
         roomName = RoomManager.Instance.roomName;
         roomNameText.text = roomName;
+        votingButton.gameObject.SetActive(false);
 
         switch (RoomManager.Instance.currentModeIndex)
         {
@@ -76,6 +84,8 @@ public class WaitingRoomManager : MonoBehaviourPunCallbacks
         {
             Hashtable playerProperties = new Hashtable { { "isReady", true } };
             PhotonNetwork.LocalPlayer.SetCustomProperties(playerProperties);
+
+            ResetVoteCounts();
         }
 
         UpdateUIForOwnership();
@@ -92,12 +102,38 @@ public class WaitingRoomManager : MonoBehaviourPunCallbacks
         playButton.onClick.AddListener(OnPlayButtonClicked);
         readyButton.onClick.AddListener(OnReadyButtonClicked);
         leaveButton.onClick.AddListener(OnLeaveButtonClicked);
+        votingButton.onClick.AddListener(OnVotingButtonClicked);
 
         GreenTrafficLight.SetActive(false);
 
         UpdatePlayButtonInteractable();
 
         BackgroundMusic = GameObject.Find("AudioManager/BackgroundMusic").GetComponent<AudioSource>();
+    }
+
+    private void Update()
+    {
+        if (PhotonNetwork.IsMasterClient)
+        {
+            Hashtable gameProperties = new Hashtable { { "currentNumberOfPlayers", PhotonNetwork.CurrentRoom.PlayerCount } };
+            PhotonNetwork.LocalPlayer.SetCustomProperties(gameProperties);
+        }
+
+        if (RoomManager.Instance != null && RoomManager.Instance.currentModeIndex == 2)
+        {
+            if (currentNumberOfPlayers == RoomManager.Instance.numberOfPlayers)
+            {
+                votingButton.gameObject.SetActive(true);
+            }
+            else
+            {
+                votingButton.gameObject.SetActive(false);
+                if (PhotonNetwork.IsConnected) ResetVoteCounts();
+                isVoted = false;
+            }
+        }
+
+        LogMostVotedPlayers();
     }
 
     public override void OnPlayerLeftRoom(Player otherPlayer)
@@ -171,6 +207,109 @@ public class WaitingRoomManager : MonoBehaviourPunCallbacks
         }
     }
 
+    public void OnVotingButtonClicked()
+    {
+        foreach (Transform child in votePlayerListContent)
+        {
+            Destroy(child.gameObject);
+        }
+
+        foreach (Player player in PhotonNetwork.PlayerList)
+        {
+            GameObject playerButton = Instantiate(playerButtonPrefab, votePlayerListContent);
+            playerButton.GetComponentInChildren<Text>().text = player.NickName;
+
+            Button voteButton = playerButton.GetComponent<Button>();
+            Player currentPlayer = player;
+            voteButton.onClick.AddListener(() => CastVote(currentPlayer, playerButton));
+        }
+
+        VotingBossUI.SetActive(true);
+    }
+
+    public void CastVote(Player targetPlayer, GameObject playerButton)
+    {
+        if (isVoted)
+        {
+            Player previousVotePlayer = PhotonNetwork.PlayerList.FirstOrDefault(p => p.NickName == voteWho);
+
+            if (previousVotePlayer != null)
+            {
+                Hashtable playerProperties = previousVotePlayer.CustomProperties;
+                if (!playerProperties.ContainsKey("VoteCount"))
+                {
+                    playerProperties["VoteCount"] = 0;
+                }
+                playerProperties["VoteCount"] = (int)playerProperties["VoteCount"] - 1;
+                previousVotePlayer.SetCustomProperties(playerProperties);
+
+                Debug.Log(previousVotePlayer.NickName + " now has " + playerProperties["VoteCount"] + " vote(s).");
+            }
+        }
+        else
+        {
+            isVoted = true;
+        }
+
+        voteWho = targetPlayer.NickName;
+
+        Hashtable targetProperties = targetPlayer.CustomProperties;
+        if (!targetProperties.ContainsKey("VoteCount"))
+        {
+            targetProperties["VoteCount"] = 0;
+        }
+        targetProperties["VoteCount"] = (int)targetProperties["VoteCount"] + 1;
+        targetPlayer.SetCustomProperties(targetProperties);
+        Debug.Log(targetPlayer.NickName + " has " + targetProperties["VoteCount"] + " vote(s).");
+
+        VotingBossUI.SetActive(false);
+    }
+
+    private void LogMostVotedPlayers()
+    {
+        List<Player> sortedPlayers = PhotonNetwork.PlayerList.ToList();
+
+        sortedPlayers.Sort((x, y) =>
+        {
+            int xVotes = x.CustomProperties.ContainsKey("VoteCount") ? (int)x.CustomProperties["VoteCount"] : 0;
+            int yVotes = y.CustomProperties.ContainsKey("VoteCount") ? (int)y.CustomProperties["VoteCount"] : 0;
+            return yVotes.CompareTo(xVotes);
+        });
+
+        RoomManager.Instance.mostVotePlayer.Clear();
+
+        if (sortedPlayers.Count > 0)
+        {
+            int numberOfBosses = RoomManager.Instance.maxNumberOfBosses;
+            for (int i = 0; i < Mathf.Min(numberOfBosses, sortedPlayers.Count); i++)
+            {
+                RoomManager.Instance.mostVotePlayer.Add(sortedPlayers[i].NickName);
+                Debug.Log($"Boss {i + 1}: {sortedPlayers[i].NickName}");
+            }
+        }
+        else
+        {
+            Debug.Log("No players received votes.");
+        }
+
+        foreach (Player player in sortedPlayers)
+        {
+            int voteCount = player.CustomProperties.ContainsKey("VoteCount") ? (int)player.CustomProperties["VoteCount"] : 0;
+            Debug.Log($"Player: {player.NickName}, Votes: {voteCount}");
+        }
+    }
+
+    private void ResetVoteCounts()
+    {
+        foreach (Player player in PhotonNetwork.PlayerList)
+        {
+            Hashtable voteProperties = new Hashtable { { "VoteCount", 0 } };
+            player.SetCustomProperties(voteProperties);
+        }
+        Debug.Log("Vote counts reset for all players.");
+    }
+
+
     public override void OnMasterClientSwitched(Player newMasterClient)
     {
         Debug.Log("Master client switched to: " + newMasterClient.NickName);
@@ -190,12 +329,25 @@ public class WaitingRoomManager : MonoBehaviourPunCallbacks
 
     public override void OnJoinedRoom()
     {
+        base.OnJoinedRoom();
+        if (PhotonNetwork.CurrentRoom.CustomProperties.TryGetValue("currentNumberOfPlayers", out object playerCount))
+        {
+            Hashtable properties = new Hashtable { { "currentNumberOfPlayers", playerCount } };
+            PhotonNetwork.LocalPlayer.SetCustomProperties(properties);
+        }
+
         Hashtable playerProperties = new Hashtable { { "isReady", PhotonNetwork.IsMasterClient } };
         PhotonNetwork.LocalPlayer.SetCustomProperties(playerProperties);
     }
 
     public override void OnPlayerPropertiesUpdate(Player targetPlayer, Hashtable changedProps)
     {
+        if (changedProps.ContainsKey("currentNumberOfPlayers"))
+        {
+            currentNumberOfPlayers = (int)changedProps["currentNumberOfPlayers"];
+            Debug.Log($"Player {targetPlayer.NickName} updated currentNumberOfPlayers to {changedProps["currentNumberOfPlayers"]}");
+        }
+
         UpdatePlayButtonInteractable();
     }
 

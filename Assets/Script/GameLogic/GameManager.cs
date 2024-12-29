@@ -59,7 +59,7 @@ public class GameManager : NetworkBehaviour
 
             if (!rolesAssigned.ContainsKey(NetworkManager.Singleton.LocalClientId))
             {
-                AssignRoleLogic(NetworkManager.Singleton.LocalClientId);
+                AssignRoleLogic(NetworkManager.Singleton.LocalClientId, SessionManager.Instance.username);
             }
         }
 
@@ -67,7 +67,7 @@ public class GameManager : NetworkBehaviour
         {
             if (!rolesAssigned.ContainsKey(NetworkManager.Singleton.LocalClientId))
             {
-                RequestRoleAssignmentServerRpc();
+                RequestRoleAssignmentServerRpc(SessionManager.Instance.username);
             }
         }
     }
@@ -80,28 +80,49 @@ public class GameManager : NetworkBehaviour
     }
 
     [ServerRpc(RequireOwnership = false)]
-    public void RequestRoleAssignmentServerRpc(ServerRpcParams rpcParams = default)
+    public void RequestRoleAssignmentServerRpc(string username, ServerRpcParams rpcParams = default)
     {
-        AssignRoleLogic(rpcParams.Receive.SenderClientId);
+        AssignRoleLogic(rpcParams.Receive.SenderClientId, username);
     }
 
-    private void AssignRoleLogic(ulong clientId)
+    private void AssignRoleLogic(ulong clientId, string username)
     {
         if (rolesAssigned.ContainsKey(clientId) && rolesAssigned[clientId]) return;
 
         int randomRole = Random.Range(0, 2); // 0 = Worker, 1 = Boss
 
-        if (randomRole == 1 && numberOfBosses.Value < maxNumberOfBosses)
+        switch (RoomManager.Instance.currentModeIndex)
         {
-            AssignBoss(clientId);
-        }
-        else if (numberOfWorkers.Value < maxNumberOfWorkers)
-        {
-            AssignWorker(clientId);
-        }
-        else
-        {
-            AssignBoss(clientId);
+            case 1:
+                if (randomRole == 1 && numberOfBosses.Value < maxNumberOfBosses)
+                {
+                    AssignBoss(clientId);
+                }
+                else if (numberOfWorkers.Value < maxNumberOfWorkers)
+                {
+                    AssignWorker(clientId);
+                }
+                else
+                {
+                    AssignBoss(clientId);
+                }
+                break;
+            case 2:
+                bool isBoss = false;
+                for (int i = 0; i < maxNumberOfBosses; i++)
+                {
+                    if (RoomManager.Instance.mostVotePlayer[i] == username)
+                    {
+                        AssignBoss(clientId);
+                        isBoss = true;
+                        break;
+                    }
+                }
+                if (!isBoss) AssignWorker(clientId);
+                break;
+            default:
+                Debug.Log("Nothing");
+                break;
         }
         SpawnPlayer(clientId);
     }

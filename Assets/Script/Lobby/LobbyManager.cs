@@ -194,11 +194,12 @@ public class LobbyManager : MonoBehaviourPunCallbacks
         {
             { "roomCode", roomNameInput.text },
             { "currentMapIndex", mapSelection.currentMapIndex },
-            { "currentModeIndex", modeSelection.currentModeIndex }
+            { "currentModeIndex", modeSelection.currentModeIndex },
+            { "numberOfPlayers", numberOfPlayerSelection.totalNumberOfPlayer }
         };
 
         options.CustomRoomProperties = customProperties;
-        options.CustomRoomPropertiesForLobby = new string[] { "roomCode", "currentMapIndex", "currentModeIndex" };
+        options.CustomRoomPropertiesForLobby = new string[] { "roomCode", "currentMapIndex", "currentModeIndex", "numberOfPlayers" };
 
         PhotonNetwork.CreateRoom(roomNameInput.text, options, null);
     }
@@ -214,7 +215,8 @@ public class LobbyManager : MonoBehaviourPunCallbacks
         {
             { "roomCode", roomNameInput.text },
             { "currentMapIndex", mapSelection.currentMapIndex },
-            { "currentModeIndex", modeSelection.currentModeIndex }
+            { "currentModeIndex", modeSelection.currentModeIndex },
+            { "numberOfPlayers", numberOfPlayerSelection.totalNumberOfPlayer }
         };
 
         PhotonNetwork.CurrentRoom.SetCustomProperties(customProperties);
@@ -347,6 +349,13 @@ public class LobbyManager : MonoBehaviourPunCallbacks
             int modeIndex = (int)customProperties["currentModeIndex"];
             RoomManager.Instance.currentModeIndex = modeIndex;
             Debug.Log("Mode Index: " + modeIndex);
+        }
+
+        if (customProperties.ContainsKey("numberOfPlayers"))
+        {
+            int numberOfPlayers = (int)customProperties["numberOfPlayers"];
+            RoomManager.Instance.numberOfPlayers = numberOfPlayers;
+            Debug.Log("Number of Players: " + numberOfPlayers);
         }
     }
 

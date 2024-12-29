@@ -24,6 +24,9 @@ EditorBuildSettings:
     path: Assets/Scenes/Game-Map1-Mode1.unity
     guid: d55bdfa2facfda845851c482c964db6c
   - enabled: 1
+    path: Assets/Scenes/Game-Map1-Mode2.unity
+    guid: bd0ab1c7b6871204b97e2cc6c1f9774b
+  - enabled: 1
     path: Assets/Scenes/EndGameScene.unity
     guid: b102bfd2f7de5c943a3014a6396b0a51
   m_configObjects: {}
