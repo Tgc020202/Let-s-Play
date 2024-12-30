@@ -29,6 +29,7 @@ public class EndGameSceneBehaviour : MonoBehaviourPunCallbacks
     private int maxNumberOfWorkers;
     private int currentMapIndex;
     private int currentModeIndex;
+    private bool isPrivate;
     private string roomName;
 
     void Start()
@@ -62,6 +63,7 @@ public class EndGameSceneBehaviour : MonoBehaviourPunCallbacks
             maxNumberOfWorkers = RoomManager.Instance.maxNumberOfWorkers;
             currentMapIndex = RoomManager.Instance.currentMapIndex;
             currentModeIndex = RoomManager.Instance.currentModeIndex;
+            isPrivate = RoomManager.Instance.isPrivate;
             roomName = RoomManager.Instance.roomName;
         }
         else
@@ -97,15 +99,22 @@ public class EndGameSceneBehaviour : MonoBehaviourPunCallbacks
         RoomOptions options = new RoomOptions
         {
             MaxPlayers = (byte)numberOfPlayers,
-            IsOpen = true,
-            IsVisible = true
+            IsVisible = !isPrivate,
+            IsOpen = true
         };
 
-        Hashtable customProperties = new Hashtable { { "roomCode", roomName } };
+        Hashtable customProperties = new Hashtable
+        {
+            { "roomCode", roomName },
+            { "currentMapIndex", currentMapIndex },
+            { "currentModeIndex", currentModeIndex },
+            { "numberOfPlayers", numberOfPlayers }
+        };
+
         options.CustomRoomProperties = customProperties;
+        options.CustomRoomPropertiesForLobby = new string[] { "roomCode", "currentMapIndex", "currentModeIndex", "numberOfPlayers" };
 
         PhotonNetwork.CreateRoom(roomName, options, null);
-        Debug.Log($"Creating room: {roomName}");
 
         yield return new WaitForSeconds(2f);
         StartCoroutine(EndGameAndRecreateRoom());
@@ -124,7 +133,36 @@ public class EndGameSceneBehaviour : MonoBehaviourPunCallbacks
     {
         if (isTransitioning) return;
         isTransitioning = true;
-        Debug.Log("Rejoined room successfully. Transitioning to waiting room.");
+        Hashtable customProperties = PhotonNetwork.CurrentRoom.CustomProperties;
+
+        if (customProperties.ContainsKey("roomCode"))
+        {
+            string roomCode = customProperties["roomCode"].ToString();
+            RoomManager.Instance.roomName = roomCode;
+            Debug.Log("Room Code: " + roomCode);
+        }
+
+        if (customProperties.ContainsKey("currentMapIndex"))
+        {
+            int mapIndex = (int)customProperties["currentMapIndex"];
+            RoomManager.Instance.currentMapIndex = mapIndex;
+            Debug.Log("Map Index: " + mapIndex);
+        }
+
+        if (customProperties.ContainsKey("currentModeIndex"))
+        {
+            int modeIndex = (int)customProperties["currentModeIndex"];
+            RoomManager.Instance.currentModeIndex = modeIndex;
+            Debug.Log("Mode Index: " + modeIndex);
+        }
+
+        if (customProperties.ContainsKey("numberOfPlayers"))
+        {
+            int numberOfPlayers = (int)customProperties["numberOfPlayers"];
+            RoomManager.Instance.numberOfPlayers = numberOfPlayers;
+            Debug.Log("Number of Players: " + numberOfPlayers);
+        }
+
         StartCoroutine(EndGameAndRecreateRoom());
     }
 

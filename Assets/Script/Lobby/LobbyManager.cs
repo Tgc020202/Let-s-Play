@@ -181,6 +181,7 @@ public class LobbyManager : MonoBehaviourPunCallbacks
         RoomManager.Instance.maxNumberOfWorkers = numberOfPlayerSelection.staffCount;
         RoomManager.Instance.currentMapIndex = mapSelection.currentMapIndex;
         RoomManager.Instance.currentModeIndex = modeSelection.currentModeIndex;
+        RoomManager.Instance.isPrivate = isPrivate;
         RoomManager.Instance.roomName = roomNameInput.text;
 
         RoomOptions options = new RoomOptions

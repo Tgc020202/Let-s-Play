@@ -64,6 +64,8 @@ public class ButtonWorkerFunctions : MonoBehaviour
         if (playerMovement != null)
         {
             redButton.interactable = playerMovement.enabled;
+            greenButton.interactable = playerMovement.enabled;
+            runButton.interactable = playerMovement.enabled;
         }
     }
 
@@ -173,6 +175,7 @@ public class ButtonWorkerFunctions : MonoBehaviour
         int coolDownTime = isActive ? 5 : 3;
 
         greenButton.interactable = false;
+        redButton.interactable = false;
 
         for (int i = coolDownTime; i > 0; i--)
         {
@@ -181,6 +184,7 @@ public class ButtonWorkerFunctions : MonoBehaviour
         }
         greenButtonText.text = "Green";
         greenButton.interactable = true;
+        redButton.interactable = true;
     }
 
     void OnSkipGuidanceUI()

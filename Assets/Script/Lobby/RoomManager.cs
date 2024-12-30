@@ -12,6 +12,7 @@ public class RoomManager : MonoBehaviour
     public int currentModeIndex;
     public string roomName;
     public bool isBossWin;
+    public bool isPrivate;
     public bool gameStarted = false;
     public List<string> mostVotePlayer;
 
