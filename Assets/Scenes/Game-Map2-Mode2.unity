@@ -8949,6 +8949,7 @@ MonoBehaviour:
   GameViewUI: {fileID: 1968646440}
   MapDesign: {fileID: 505584788}
   GuidanceUI: {fileID: 312974372}
+  BossControllerUI: {fileID: 1335156412}
 --- !u!114 &825150958
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -9793,6 +9794,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_ProtocolType: 0
+  m_UseWebSockets: 0
+  m_UseEncryption: 0
   m_MaxPacketQueueSize: 128
   m_MaxPayloadSize: 6144
   m_HeartbeatTimeoutMS: 500

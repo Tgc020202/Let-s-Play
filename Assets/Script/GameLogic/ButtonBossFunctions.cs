@@ -20,6 +20,7 @@ public class ButtonBossFunctions : MonoBehaviour
     public GameObject GameViewUI;
     public GameObject MapDesign;
     public GameObject GuidanceUI;
+    public GameObject BossControllerUI;
     private GameObject targetPlayer;
 
     // Defines
@@ -128,6 +129,11 @@ public class ButtonBossFunctions : MonoBehaviour
 
     void OnSkipGuidanceUI()
     {
+        if (playerNetworkObject != null && playerNetworkObject.IsOwner)
+        {
+            SetBossImmunityServerRpc(playerNetworkObject.NetworkObjectId, BossControllerUI.activeSelf);
+        }
+
         MapDesign.SetActive(true);
         GameViewUI.SetActive(true);
         GuidanceUI.SetActive(false);
@@ -142,7 +148,7 @@ public class ButtonBossFunctions : MonoBehaviour
         {
             var targetPlayerManager = targetNetworkObject.GetComponent<PlayerManager>();
 
-            if (targetPlayerManager != null && !targetPlayerManager.isImmuneToCatch && !targetPlayerManager.isSpectacle)
+            if (targetPlayerManager != null && !targetPlayerManager.isBossRole && !targetPlayerManager.isImmuneToCatch && !targetPlayerManager.isSpectacle)
             {
                 StartCoroutine(CatchCoolDown(true));
 
@@ -152,6 +158,29 @@ public class ButtonBossFunctions : MonoBehaviour
                 GameObject.FindObjectOfType<GameManager>()?.UpdateWorkerCountRequest(-1);
                 targetPlayerManager.isSpectacle = true;
             }
+        }
+    }
+
+    // Server RPC to set immunity for a player
+    [ServerRpc(RequireOwnership = false)]
+    public void SetBossImmunityServerRpc(ulong targetPlayerId, bool enabled)
+    {
+        if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.ContainsKey(targetPlayerId))
+        {
+            var targetNetworkObject = NetworkManager.Singleton.SpawnManager.SpawnedObjects[targetPlayerId];
+
+            if (targetNetworkObject != null)
+            {
+                var targetPlayerManager = targetNetworkObject.GetComponent<PlayerManager>();
+                if (targetPlayerManager != null)
+                {
+                    targetPlayerManager.SetBossImmunityServerRpc(enabled);
+                }
+            }
+        }
+        else
+        {
+            Debug.Log($"NetworkObject with ID {targetPlayerId} does not exist.");
         }
     }
 }

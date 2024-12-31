@@ -8,8 +8,9 @@ public class PlayerManager : NetworkBehaviour
     private SpriteRenderer spriteRenderer;
 
     // Defines
-    public bool isImmuneToCatch;
-    public bool isSpectacle;
+    public bool isImmuneToCatch = false;
+    public bool isBossRole = false;
+    public bool isSpectacle = false;
 
     // Network Variables
     public NetworkVariable<Color> PlayerColor = new NetworkVariable<Color>(Color.white);
@@ -107,7 +108,20 @@ public class PlayerManager : NetworkBehaviour
     [ClientRpc]
     private void SetImmunityClientRpc(bool enabled)
     {
-        isImmuneToCatch = enabled;
+        isBossRole = enabled;
+    }
+
+    // Set player who boss role immunity status
+    [ServerRpc(RequireOwnership = false)]
+    public void SetBossImmunityServerRpc(bool enabled)
+    {
+        SetBossImmunityClientRpc(enabled);
+    }
+
+    [ClientRpc]
+    private void SetBossImmunityClientRpc(bool enabled)
+    {
+        isBossRole = enabled;
     }
 
     // Set color changes for the worker role
