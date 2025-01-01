@@ -108,7 +108,7 @@ public class PlayerManager : NetworkBehaviour
     [ClientRpc]
     private void SetImmunityClientRpc(bool enabled)
     {
-        isBossRole = enabled;
+        isImmuneToCatch = enabled;
     }
 
     // Set player who boss role immunity status

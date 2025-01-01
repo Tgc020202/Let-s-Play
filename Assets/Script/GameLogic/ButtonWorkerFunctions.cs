@@ -97,10 +97,6 @@ public class ButtonWorkerFunctions : MonoBehaviour
                 taskManager.RunButtonPressed();
                 StartCoroutine(SpeedBoostCoolDown());
             }
-            else
-            {
-                Debug.Log("Speed boost is disabled due to immunity.");
-            }
         }
     }
 

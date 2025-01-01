@@ -318,8 +318,8 @@ RectTransform:
   - {fileID: 876373941}
   - {fileID: 800764254}
   - {fileID: 529373029}
-  - {fileID: 817704694}
   - {fileID: 1119967305}
+  - {fileID: 817704694}
   m_Father: {fileID: 1931069658}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -1561,12 +1561,10 @@ MonoBehaviour:
   mapText: {fileID: 821036977}
   playerListContent: {fileID: 381562367}
   votePlayerListContent: {fileID: 1693368632}
-  voteTextListContent: {fileID: 1999380066}
   CarAnimator: {fileID: 864102669}
   RedTrafficLight: {fileID: 1014579481}
   GreenTrafficLight: {fileID: 838320141}
   playerButtonPrefab: {fileID: 4039791945438880305, guid: b6c940c4f93ce564aaa2ed90ddc5b57f, type: 3}
-  voteTextPrefab: {fileID: 7142397847970721569, guid: 5cce8488125c35045b3fdca45201bcf5, type: 3}
   VotingBossUI: {fileID: 1470077079}
 --- !u!114 &623960016
 MonoBehaviour:
