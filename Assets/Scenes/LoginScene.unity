@@ -1589,6 +1589,50 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1292838577}
   m_CullTransparentMesh: 1
+--- !u!1 &1302106838
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1302106839}
+  - component: {fileID: 1302106840}
+  m_Layer: 0
+  m_Name: ServicesManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1302106839
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1302106838}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1302106840
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1302106838}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4a4bac10b1d63394a93146cf7a1aed39, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1436186366 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 5344844099425783260, guid: 15018b4d504faf244b7478a0528ac626, type: 3}
@@ -1868,8 +1912,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1f1bc8530a683844eb65e0c8e75fe7ac, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  usernameInputField: {fileID: 656585101}
-  dbManager: {fileID: 1180659524}
+  username: 
 --- !u!1 &1649810220
 GameObject:
   m_ObjectHideFlags: 0
@@ -2407,10 +2450,8 @@ MonoBehaviour:
   passwordInputField: {fileID: 1668850473}
   usernameInvalidMessage: {fileID: 2084615013}
   passwordInvalidMessage: {fileID: 809989058}
-  statusMessage: {fileID: 2084615013}
   playButton: {fileID: 676549415}
   backToRegisterButton: {fileID: 1165910326}
-  dbManager: {fileID: 1180659524}
   CarAnimator: {fileID: 99290209}
   RedTrafficLight: {fileID: 1436186366}
   GreenTrafficLight: {fileID: 900665722}
@@ -2635,4 +2676,5 @@ SceneRoots:
   - {fileID: 1950355856}
   - {fileID: 1180659525}
   - {fileID: 1643799951}
+  - {fileID: 1302106839}
   - {fileID: 1006749924}
