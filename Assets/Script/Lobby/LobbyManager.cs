@@ -105,6 +105,11 @@ public class LobbyManager : MonoBehaviourPunCallbacks
         }
     }
 
+    private void Update()
+    {
+        modeButton.interactable = PhotonNetwork.IsConnectedAndReady;
+    }
+
     public void ToggleUIActive(string UIName, bool isActive)
     {
         foreach (var ui in uiDictionary)
@@ -166,11 +171,14 @@ public class LobbyManager : MonoBehaviourPunCallbacks
     {
         isConnectedToMaster = true;
         PhotonNetwork.JoinLobby();
+
+        modeButton.interactable = PhotonNetwork.IsConnectedAndReady;
     }
 
     public override void OnJoinedLobby()
     {
         Debug.Log("Successfully joined the lobby system.");
+        modeButton.interactable = PhotonNetwork.IsConnectedAndReady;
     }
 
     public void OnCreateRoomButtonClicked()
@@ -202,7 +210,14 @@ public class LobbyManager : MonoBehaviourPunCallbacks
         options.CustomRoomProperties = customProperties;
         options.CustomRoomPropertiesForLobby = new string[] { "roomCode", "currentMapIndex", "currentModeIndex", "numberOfPlayers" };
 
-        PhotonNetwork.CreateRoom(roomNameInput.text, options, null);
+        if (PhotonNetwork.IsConnectedAndReady)
+        {
+            PhotonNetwork.CreateRoom(roomNameInput.text, options, null);
+        }
+        else
+        {
+            Debug.LogError("Client is not ready to create a room!");
+        }
     }
 
     public override void OnCreatedRoom()
