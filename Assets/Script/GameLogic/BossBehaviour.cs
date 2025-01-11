@@ -57,9 +57,44 @@ public class BossBehaviour : MonoBehaviour
         }
     }
 
+    // private void OnClientConnected(ulong clientId)
+    // {
+    //     StartCoroutine(WaitForPlayerObject());
+    // }
+
+    // private IEnumerator WaitForPlayerObject()
+    // {
+    //     while (NetworkManager.Singleton.LocalClient == null || NetworkManager.Singleton.LocalClient.PlayerObject == null)
+    //     {
+    //         yield return null;
+    //     }
+
+    //     playerNetworkObject = NetworkManager.Singleton.LocalClient.PlayerObject.GetComponent<NetworkObject>();
+    //     playerMovement = playerNetworkObject.GetComponent<PlayerMovement>();
+
+    //     if (playerMovement == null)
+    //     {
+    //         Debug.LogError("PlayerMovement script is not attached to the PlayerObject!");
+    //     }
+    // }
+
     private void OnClientConnected(ulong clientId)
     {
-        StartCoroutine(WaitForPlayerObject());
+        if (NetworkManager.Singleton.LocalClient == null)
+        {
+            Debug.LogError("LocalClient is null. Ensure the client is properly initialized.");
+            return;
+        }
+
+        if (NetworkManager.Singleton.LocalClient.PlayerObject == null)
+        {
+            Debug.Log("PlayerObject not yet available. Waiting for it...");
+            StartCoroutine(WaitForPlayerObject());
+        }
+        else
+        {
+            InitializePlayerComponents();
+        }
     }
 
     private IEnumerator WaitForPlayerObject()
@@ -69,9 +104,19 @@ public class BossBehaviour : MonoBehaviour
             yield return null;
         }
 
-        playerNetworkObject = NetworkManager.Singleton.LocalClient.PlayerObject.GetComponent<NetworkObject>();
-        playerMovement = playerNetworkObject.GetComponent<PlayerMovement>();
+        InitializePlayerComponents();
+    }
 
+    private void InitializePlayerComponents()
+    {
+        playerNetworkObject = NetworkManager.Singleton.LocalClient.PlayerObject.GetComponent<NetworkObject>();
+        if (playerNetworkObject == null)
+        {
+            Debug.LogError("NetworkObject component not found on PlayerObject!");
+            return;
+        }
+
+        playerMovement = playerNetworkObject.GetComponent<PlayerMovement>();
         if (playerMovement == null)
         {
             Debug.LogError("PlayerMovement script is not attached to the PlayerObject!");

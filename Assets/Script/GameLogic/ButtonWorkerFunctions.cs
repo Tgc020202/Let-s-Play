@@ -25,6 +25,7 @@ public class ButtonWorkerFunctions : MonoBehaviour
     public GameObject MapDesign;
     public GameObject GuidanceUI;
     private GameObject targetPlayer;
+    public GameObject playerCenterMark;
 
     // Defines
     private bool canUseRunButton = true;
@@ -92,6 +93,7 @@ public class ButtonWorkerFunctions : MonoBehaviour
             if (playerManager != null && !playerManager.isImmuneToCatch)
             {
                 ChangePlayerColor(Color.black);
+                SetPlayerCenterMarkAlpha(0.15f);
 
                 // Task 2: Run Button Press
                 taskManager.RunButtonPressed();
@@ -128,6 +130,29 @@ public class ButtonWorkerFunctions : MonoBehaviour
         }
     }
 
+    private void SetPlayerCenterMarkAlpha(float alpha)
+    {
+        if (playerCenterMark != null)
+        {
+            SpriteRenderer spriteRenderer = playerCenterMark.GetComponent<SpriteRenderer>();
+            if (spriteRenderer != null)
+            {
+                Color color = spriteRenderer.color;
+                color.a = alpha;
+                spriteRenderer.color = color;
+                Debug.Log("PlayerCenterMark alpha adjusted.");
+            }
+            else
+            {
+                Debug.LogError("PlayerCenterMark does not have a SpriteRenderer component!");
+            }
+        }
+        else
+        {
+            Debug.LogError("PlayerCenterMark is null!");
+        }
+    }
+
     void ChangePlayerColor(Color color)
     {
         if (playerNetworkObject != null && playerNetworkObject.IsOwner)
@@ -151,7 +176,7 @@ public class ButtonWorkerFunctions : MonoBehaviour
     IEnumerator SpeedBoostCoolDown()
     {
         canUseRunButton = false;
-        playerMovement.IncreaseSpeedServerRpc(true, 10f);
+        playerMovement.IncreaseSpeedServerRpc(true, 8f);
 
         for (int i = 20; i > 0; i--)
         {
@@ -159,7 +184,8 @@ public class ButtonWorkerFunctions : MonoBehaviour
             yield return new WaitForSeconds(1);
             if (i == 16)
             {
-                playerMovement.IncreaseSpeedServerRpc(false, 10f);
+                SetPlayerCenterMarkAlpha(0f);
+                playerMovement.IncreaseSpeedServerRpc(false, 8f);
             }
         }
         runButtonText.text = "Run";

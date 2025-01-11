@@ -775,7 +775,6 @@ MonoBehaviour:
   usernameInvalidMessage: {fileID: 188236831}
   passwordInvalidMessage: {fileID: 1626300425}
   submitButton: {fileID: 364393496}
-  dbManager: {fileID: 2059689122}
   CarAnimator: {fileID: 4242681042649560519}
   RedTrafficLight: {fileID: 1899340884707855186}
   GreenTrafficLight: {fileID: 941878187}
@@ -1704,8 +1703,8 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1637464320}
   m_TextComponent: {fileID: 1833078148}
   m_Placeholder: {fileID: 81310824}
-  m_ContentType: 0
-  m_InputType: 0
+  m_ContentType: 7
+  m_InputType: 2
   m_AsteriskChar: 42
   m_KeyboardType: 0
   m_LineType: 0

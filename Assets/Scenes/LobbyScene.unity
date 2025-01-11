@@ -394,7 +394,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c7983e07fee8bb845921bbf452009d5d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gameStarted: 0
   numberOfPlayers: 0
   maxNumberOfBosses: 0
   maxNumberOfWorkers: 0
@@ -402,6 +401,9 @@ MonoBehaviour:
   currentModeIndex: 0
   roomName: 
   isBossWin: 0
+  isPrivate: 0
+  gameStarted: 0
+  mostVotePlayer: []
 --- !u!4 &130289657
 Transform:
   m_ObjectHideFlags: 0
@@ -5226,7 +5228,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   previousButton: {fileID: 1451600579}
   nextButton: {fileID: 1733949656}
-  modeButton: {fileID: 1357815091}
   backButon: {fileID: 2074965985}
   modeText: {fileID: 1307662317}
   TotalNumberUI: {fileID: 1445170077}
@@ -5311,6 +5312,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   roomNameInput: {fileID: 407190991}
+  roomCodeInput: {fileID: 202782456}
   roomNameErrorText: {fileID: 1220839847}
   createRoomButton: {fileID: 144847639}
   joinRoomButton: {fileID: 2144700720}
@@ -5319,12 +5321,11 @@ MonoBehaviour:
   modeButton: {fileID: 1357815091}
   backButton1: {fileID: 1028718870}
   backButton2: {fileID: 266778757}
-  roomCodeInput: {fileID: 202782456}
+  roomListContent: {fileID: 2114016212}
   numberOfPlayerSelection: {fileID: 1220390545}
   mapSelection: {fileID: 1220390546}
   modeSelection: {fileID: 1220390544}
-  roomListContent: {fileID: 2114016212}
-  roomItemPrefab: {fileID: 1886481406055185689, guid: 53ced70edbaed4c45842ff907633126b, type: 3}
+  CarAnimator: {fileID: 2116513125}
   RoomSelectionUI: {fileID: 1944491798}
   PlayerSetupUI: {fileID: 2035794712}
   RoomSetupUI: {fileID: 619014750}
@@ -5332,7 +5333,7 @@ MonoBehaviour:
   MapUI: {fileID: 625648619}
   TotalNumberUI: {fileID: 1445170077}
   ModeUI: {fileID: 725945003}
-  CarAnimator: {fileID: 2116513125}
+  roomItemPrefab: {fileID: 1886481406055185689, guid: 53ced70edbaed4c45842ff907633126b, type: 3}
   RedTrafficLight: {fileID: 1220879979}
   GreenTrafficLight: {fileID: 223096410}
 --- !u!1 &1220839845
@@ -8300,7 +8301,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 9149985520066067338, guid: 8e1ccdaf54b2ef643afd80c2ee52c7b7, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 6.25
+      value: -7.5
       objectReference: {fileID: 0}
     - target: {fileID: 9149985520066067338, guid: 8e1ccdaf54b2ef643afd80c2ee52c7b7, type: 3}
       propertyPath: m_LocalPosition.y
@@ -8312,7 +8313,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 9149985520066067338, guid: 8e1ccdaf54b2ef643afd80c2ee52c7b7, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 9149985520066067338, guid: 8e1ccdaf54b2ef643afd80c2ee52c7b7, type: 3}
       propertyPath: m_LocalRotation.x
@@ -8320,7 +8321,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 9149985520066067338, guid: 8e1ccdaf54b2ef643afd80c2ee52c7b7, type: 3}
       propertyPath: m_LocalRotation.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 9149985520066067338, guid: 8e1ccdaf54b2ef643afd80c2ee52c7b7, type: 3}
       propertyPath: m_LocalRotation.z
@@ -8332,7 +8333,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 9149985520066067338, guid: 8e1ccdaf54b2ef643afd80c2ee52c7b7, type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
-      value: 180
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 9149985520066067338, guid: 8e1ccdaf54b2ef643afd80c2ee52c7b7, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z

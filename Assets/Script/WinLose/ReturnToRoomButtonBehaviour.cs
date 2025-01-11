@@ -38,26 +38,6 @@ public class EndGameSceneBehaviour : MonoBehaviourPunCallbacks
 
         if (RoomManager.Instance != null)
         {
-            if (winLoseButton != null)
-            {
-                Text winLoseMessage = winLoseButton.GetComponentInChildren<Text>();
-                if (winLoseMessage != null)
-                {
-                    winLoseMessage.text = RoomManager.Instance.isBossWin ? "Boss wins!!!\nAll of you back to work!!!" : "Staff wins!!!\nLet's go back home!!!";
-                }
-                else
-                {
-                    Debug.LogError("No Text component found in the button's children.");
-                }
-            }
-        }
-        else
-        {
-            Debug.LogError("RoomManager.Instance is null! Please initialize it.");
-        }
-
-        if (RoomManager.Instance != null)
-        {
             numberOfPlayers = RoomManager.Instance.numberOfPlayers;
             maxNumberOfBosses = RoomManager.Instance.maxNumberOfBosses;
             maxNumberOfWorkers = RoomManager.Instance.maxNumberOfWorkers;

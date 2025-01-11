@@ -8,6 +8,7 @@ public class GameManager : NetworkBehaviour
     // UI Components
     public Transform[] spawnPoints;
     public Text roleText;
+    public Text numberOfTargetsText;
 
     // GameObjects
     public GameObject BossControllerUI;
@@ -48,7 +49,10 @@ public class GameManager : NetworkBehaviour
                 EndGame();
             }
         }
+
+        numberOfTargetsText.text = "Number of Targets: " + numberOfWorkers.Value;
     }
+
     public override void OnNetworkSpawn()
     {
         if (IsServer || IsHost)
@@ -71,7 +75,6 @@ public class GameManager : NetworkBehaviour
             }
         }
     }
-
 
     public void OnRoleCountChanged(int oldValue, int newValue)
     {
@@ -158,6 +161,41 @@ public class GameManager : NetworkBehaviour
         Debug.Log("Updated UI for clientId: " + clientId + " with role: " + role);
     }
 
+    // private void SpawnPlayer(ulong clientId)
+    // {
+    //     if (spawnPoints.Length == 0)
+    //     {
+    //         Debug.LogError("No spawn points assigned in the Inspector!");
+    //         return;
+    //     }
+
+    //     int spawnIndex = Random.Range(0, spawnPoints.Length);
+    //     Transform spawnPoint = spawnPoints[spawnIndex];
+
+    //     var playerObject = NetworkManager.Singleton.ConnectedClients[clientId].PlayerObject;
+
+    //     if (playerObject == null)
+    //     {
+    //         Debug.LogError($"PlayerObject for client {clientId} not found!");
+    //         return;
+    //     }
+
+    //     NetworkObject playerNetworkObject = playerObject.GetComponent<NetworkObject>();
+    //     if (playerNetworkObject != null && !playerNetworkObject.IsSpawned)
+    //     {
+    //         playerNetworkObject.SpawnAsPlayerObject(clientId);
+    //     }
+    //     else
+    //     {
+    //         Debug.Log("Player object already spawned.");
+    //     }
+
+    //     playerObject.transform.position = spawnPoint.position;
+    //     playerObject.transform.rotation = spawnPoint.rotation;
+
+    //     Debug.Log($"Player {clientId} moved to {spawnPoint.position}");
+    // }
+
     private void SpawnPlayer(ulong clientId)
     {
         if (spawnPoints.Length == 0)
@@ -169,29 +207,30 @@ public class GameManager : NetworkBehaviour
         int spawnIndex = Random.Range(0, spawnPoints.Length);
         Transform spawnPoint = spawnPoints[spawnIndex];
 
-        var playerObject = NetworkManager.Singleton.ConnectedClients[clientId].PlayerObject;
-
-        if (playerObject == null)
+        if (!NetworkManager.Singleton.ConnectedClients.TryGetValue(clientId, out var client))
         {
-            Debug.LogError($"PlayerObject for client {clientId} not found!");
+            Debug.LogError($"Client {clientId} not found in ConnectedClients!");
             return;
         }
 
-        // Check if the player object has already been spawned
-        NetworkObject playerNetworkObject = playerObject.GetComponent<NetworkObject>();
-        if (playerNetworkObject != null && !playerNetworkObject.IsSpawned)
+        var playerObject = client.PlayerObject;
+
+        if (playerObject == null)
         {
-            playerNetworkObject.SpawnAsPlayerObject(clientId);
+            Debug.LogError($"PlayerObject for client {clientId} is null!");
+            return;
         }
-        else
+
+        var networkObject = playerObject.GetComponent<NetworkObject>();
+        if (networkObject == null || !networkObject.IsSpawned)
         {
-            Debug.Log("Player object already spawned.");
+            Debug.LogError($"NetworkObject for client {clientId} is either null or not spawned!");
+            return;
         }
 
         playerObject.transform.position = spawnPoint.position;
         playerObject.transform.rotation = spawnPoint.rotation;
-
-        Debug.Log($"Player {clientId} moved to {spawnPoint.position}");
+        Debug.Log($"Player {clientId} spawned at {spawnPoint.position}");
     }
 
     public void UpdateWorkerCountRequest(int delta)
@@ -205,7 +244,6 @@ public class GameManager : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     private void RequestWorkerCountUpdateServerRpc(int delta)
     {
-        // This code runs only on the server, updating the NetworkVariable
         numberOfWorkers.Value += delta;
     }
 

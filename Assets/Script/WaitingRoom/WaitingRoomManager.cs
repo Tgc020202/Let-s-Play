@@ -80,14 +80,13 @@ public class WaitingRoomManager : MonoBehaviourPunCallbacks
         }
 
 
-        if (PhotonNetwork.IsMasterClient)
+        if (PhotonNetwork.IsMasterClient && PhotonNetwork.IsConnectedAndReady)
         {
             Hashtable playerProperties = new Hashtable { { "isReady", true } };
             PhotonNetwork.LocalPlayer.SetCustomProperties(playerProperties);
-
-            ResetVoteCounts();
         }
 
+        RetryResetVoteCounts();
         UpdateUIForOwnership();
         UpdatePlayerList();
 
@@ -111,16 +110,26 @@ public class WaitingRoomManager : MonoBehaviourPunCallbacks
         BackgroundMusic = GameObject.Find("AudioManager/BackgroundMusic").GetComponent<AudioSource>();
     }
 
+    private void RetryResetVoteCounts()
+    {
+        StartCoroutine(ResetVoteCountsWithRetry());
+    }
+
+    private IEnumerator ResetVoteCountsWithRetry()
+    {
+        while (!PhotonNetwork.IsConnectedAndReady)
+        {
+            yield return new WaitForSeconds(1f);
+        }
+        ResetVoteCounts();
+    }
+
     private void Update()
     {
-        if (PhotonNetwork.IsMasterClient)
+        if (PhotonNetwork.IsConnectedAndReady && PhotonNetwork.CurrentRoom != null && RoomManager.Instance != null && RoomManager.Instance.currentModeIndex == 2)
         {
-            Hashtable gameProperties = new Hashtable { { "currentNumberOfPlayers", PhotonNetwork.CurrentRoom.PlayerCount } };
-            PhotonNetwork.LocalPlayer.SetCustomProperties(gameProperties);
-        }
+            currentNumberOfPlayers = PhotonNetwork.CurrentRoom.PlayerCount;
 
-        if (RoomManager.Instance != null && RoomManager.Instance.currentModeIndex == 2)
-        {
             if (currentNumberOfPlayers == RoomManager.Instance.numberOfPlayers)
             {
                 votingButton.gameObject.SetActive(true);
@@ -128,7 +137,11 @@ public class WaitingRoomManager : MonoBehaviourPunCallbacks
             else
             {
                 votingButton.gameObject.SetActive(false);
-                if (PhotonNetwork.IsConnected) ResetVoteCounts();
+                if (PhotonNetwork.IsConnected)
+                {
+                    ResetVoteCounts();
+
+                }
                 isVoted = false;
             }
         }
@@ -139,6 +152,15 @@ public class WaitingRoomManager : MonoBehaviourPunCallbacks
     public override void OnPlayerLeftRoom(Player otherPlayer)
     {
         UpdatePlayerList();
+    }
+
+    private void UpdatePlayerCountProperty()
+    {
+        if (PhotonNetwork.IsMasterClient && PhotonNetwork.IsConnectedAndReady)
+        {
+            Hashtable gameProperties = new Hashtable { { "currentNumberOfPlayers", PhotonNetwork.CurrentRoom.PlayerCount } };
+            PhotonNetwork.LocalPlayer.SetCustomProperties(gameProperties);
+        }
     }
 
     private void UpdatePlayerList()
@@ -160,8 +182,11 @@ public class WaitingRoomManager : MonoBehaviourPunCallbacks
 
     public void OnLeaveButtonClicked()
     {
-        Hashtable playerProperties = new Hashtable { { "isReady", false } };
-        PhotonNetwork.LocalPlayer.SetCustomProperties(playerProperties);
+        if (PhotonNetwork.IsConnectedAndReady)
+        {
+            Hashtable playerProperties = new Hashtable { { "isReady", false } };
+            PhotonNetwork.LocalPlayer.SetCustomProperties(playerProperties);
+        }
         PhotonNetwork.LeaveRoom();
     }
 
@@ -330,10 +355,9 @@ public class WaitingRoomManager : MonoBehaviourPunCallbacks
     public override void OnJoinedRoom()
     {
         base.OnJoinedRoom();
-        if (PhotonNetwork.CurrentRoom.CustomProperties.TryGetValue("currentNumberOfPlayers", out object playerCount))
+        if (PhotonNetwork.CurrentRoom != null)
         {
-            Hashtable properties = new Hashtable { { "currentNumberOfPlayers", playerCount } };
-            PhotonNetwork.LocalPlayer.SetCustomProperties(properties);
+            currentNumberOfPlayers = PhotonNetwork.CurrentRoom.PlayerCount;
         }
 
         Hashtable playerProperties = new Hashtable { { "isReady", PhotonNetwork.IsMasterClient } };
@@ -342,12 +366,6 @@ public class WaitingRoomManager : MonoBehaviourPunCallbacks
 
     public override void OnPlayerPropertiesUpdate(Player targetPlayer, Hashtable changedProps)
     {
-        if (changedProps.ContainsKey("currentNumberOfPlayers"))
-        {
-            currentNumberOfPlayers = (int)changedProps["currentNumberOfPlayers"];
-            Debug.Log($"Player {targetPlayer.NickName} updated currentNumberOfPlayers to {changedProps["currentNumberOfPlayers"]}");
-        }
-
         UpdatePlayButtonInteractable();
     }
 
@@ -386,7 +404,6 @@ public class WaitingRoomManager : MonoBehaviourPunCallbacks
     {
         playButton.gameObject.SetActive(PhotonNetwork.IsMasterClient);
         readyButton.gameObject.SetActive(!PhotonNetwork.IsMasterClient);
-        leaveButton.gameObject.SetActive(!PhotonNetwork.IsMasterClient);
     }
 
     void LoadAnimation(string sceneName)

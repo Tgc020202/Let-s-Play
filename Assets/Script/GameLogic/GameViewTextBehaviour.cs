@@ -90,12 +90,16 @@ public class GameViewTextBehaviour : NetworkBehaviour
             BackgroundMusic.Stop();
         }
 
-        RoomManager.Instance.isBossWin = isBossWin;
-
         NetworkManager.Singleton.Shutdown();
         Destroy(NetworkManager.Singleton.gameObject);
-
-        SceneManager.LoadScene("EndGameScene");
+        if (isBossWin)
+        {
+            SceneManager.LoadScene("EndGameSceneBossWin");
+        }
+        else
+        {
+            SceneManager.LoadScene("EndGameSceneWorkerWin");
+        }
     }
 
     [ServerRpc(RequireOwnership = false)]

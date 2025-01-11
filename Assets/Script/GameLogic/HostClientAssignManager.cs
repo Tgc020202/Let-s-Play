@@ -46,7 +46,6 @@ public class HostClientAssignManager : MonoBehaviour
         string joinCode = await relayManager.StartRelay(4);
         Debug.Log($"Join Code Created: {joinCode}");
 
-        // Store the join code in Photon Custom Room Properties
         Hashtable roomProperties = new Hashtable
         {
             { JoinCodeKey, joinCode }
@@ -61,7 +60,7 @@ public class HostClientAssignManager : MonoBehaviour
 
     private void OnRoomPropertiesUpdated(EventData photonEvent)
     {
-        const byte CustomPropertiesChangedEventCode = 253; // Photon-defined code for property updates
+        const byte CustomPropertiesChangedEventCode = 253;
         if (photonEvent.Code == CustomPropertiesChangedEventCode)
         {
             if (PhotonNetwork.CurrentRoom.CustomProperties.ContainsKey(JoinCodeKey))
@@ -69,10 +68,8 @@ public class HostClientAssignManager : MonoBehaviour
                 string joinCode = PhotonNetwork.CurrentRoom.CustomProperties[JoinCodeKey] as string;
                 Debug.Log($"Retrieved Join Code: {joinCode}");
 
-                // Join the Relay using the retrieved join code
                 relayManager.JoinRelay(joinCode);
 
-                // Unsubscribe from the event listener to avoid duplicate calls
                 PhotonNetwork.NetworkingClient.EventReceived -= OnRoomPropertiesUpdated;
             }
         }

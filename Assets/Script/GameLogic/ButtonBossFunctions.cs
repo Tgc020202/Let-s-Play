@@ -97,7 +97,7 @@ public class ButtonBossFunctions : MonoBehaviour
     IEnumerator SpeedBoostCoolDown()
     {
         canUseRunButton = false;
-        playerMovement.IncreaseSpeedServerRpc(true, 20f);
+        playerMovement.IncreaseSpeedServerRpc(true, 10f);
 
         for (int i = 20; i > 0; i--)
         {
@@ -105,7 +105,7 @@ public class ButtonBossFunctions : MonoBehaviour
             yield return new WaitForSeconds(1);
             if (i == 10)
             {
-                playerMovement.IncreaseSpeedServerRpc(false, 20f);
+                playerMovement.IncreaseSpeedServerRpc(false, 10f);
             }
         }
         runButtonText.text = RunMessage;
@@ -131,7 +131,7 @@ public class ButtonBossFunctions : MonoBehaviour
     {
         if (playerNetworkObject != null && playerNetworkObject.IsOwner)
         {
-            SetBossImmunityServerRpc(playerNetworkObject.NetworkObjectId, BossControllerUI.activeSelf);
+            SetBossImmunityServerRpc(playerNetworkObject.NetworkObjectId, BossControllerUI.activeSelf, new Color(0.5f, 0.0f, 0.5f));
         }
 
         MapDesign.SetActive(true);
@@ -163,7 +163,7 @@ public class ButtonBossFunctions : MonoBehaviour
 
     // Server RPC to set immunity for a player
     [ServerRpc(RequireOwnership = false)]
-    public void SetBossImmunityServerRpc(ulong targetPlayerId, bool enabled)
+    public void SetBossImmunityServerRpc(ulong targetPlayerId, bool enabled, Color color)
     {
         if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.ContainsKey(targetPlayerId))
         {
@@ -175,6 +175,10 @@ public class ButtonBossFunctions : MonoBehaviour
                 if (targetPlayerManager != null)
                 {
                     targetPlayerManager.SetBossImmunityServerRpc(enabled);
+
+                    if (enabled){
+                        targetPlayerManager.SetPlayerColorServerRpc(color);
+                    }
                 }
             }
         }
